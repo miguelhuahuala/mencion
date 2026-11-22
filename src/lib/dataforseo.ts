@@ -90,8 +90,8 @@ function dedupe(sources: Source[]) {
 }
 
 const MODEL: Record<Exclude<Engine, "chatgpt">, () => string> = {
-  claude: () => process.env.MODEL_CLAUDE || "claude-sonnet-4-6",
-  gemini: () => process.env.MODEL_GEMINI || "gemini-2.5-flash",
+  claude: () => process.env.MODEL_CLAUDE || "claude-sonnet-5-5",
+  gemini: () => process.env.MODEL_GEMINI || "gemini-3.8-flash",
   perplexity: () => process.env.MODEL_PERPLEXITY || "sonar",
 };
 
