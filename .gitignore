@@ -7,3 +7,4 @@ src/generated
 next-env.d.ts
 *.tsbuildinfo
 selftest.db
+railway-variables.env

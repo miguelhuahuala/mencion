@@ -23,6 +23,9 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         </label>
         <button className="btn-primary w-full">Ingresar</button>
       </form>
+      <p className="mt-3 text-center text-sm">
+        <Link href="/recuperar" className="text-muted underline hover:text-ink">¿Olvidaste tu contraseña?</Link>
+      </p>
       <p className="mt-4 text-center text-sm text-muted">
         ¿No tienes cuenta? <Link href="/registro" className="text-accent underline">Créala gratis</Link>
       </p>

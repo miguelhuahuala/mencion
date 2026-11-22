@@ -24,7 +24,8 @@ export async function verifyPassword(password: string, stored: string) {
   return timingSafeEqual(actual, expected);
 }
 
-const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
+export const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
+export const newToken = () => randomBytes(32).toString("base64url");
 
 /** Correos con rol de administrador (sin límites del plan gratis). */
 export function isAdminEmail(email: string) {

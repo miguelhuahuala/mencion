@@ -102,6 +102,19 @@ Cada proyecto se mide según el plan de su dueño: los del plan gratis, cada 7 d
 
 ---
 
+## 4. Correos para recuperar la contraseña (Resend)
+
+Sin esto el sitio funciona, pero quien olvide su contraseña verá “La recuperación por correo aún no está disponible”.
+
+1. Crea una cuenta gratis en https://resend.com (el plan gratis incluye 3.000 correos al mes).
+2. En **Domains → Add Domain** agrega `menciones.org`. Resend te mostrará unos registros DNS (MX, TXT/SPF y DKIM).
+3. Crea esos registros en Name.com (**Manage DNS Records**), tal como los muestra Resend, y pulsa **Verify** en Resend.
+4. En **API Keys → Create API Key** crea una clave con permiso **Sending access**.
+5. En Railway, pestaña **Variables**, agrega:
+   - `RESEND_API_KEY` = la clave del paso 4
+   - `EMAIL_FROM` = `Mencion <no-responder@menciones.org>`
+6. Prueba en https://menciones.org/recuperar con tu correo.
+
 ## Costo estimado mensual
 - **DataForSEO, medido el 22-nov-2026 con Claude Haiku:** unos $0.04 por prompt en las 4 IAs. Cada usuario gratis
   (5 prompts, semanal) cuesta unos $0.20 por semana, menos de $1 al mes. `MAX_MONTHLY_SPEND_USD` pone un tope.

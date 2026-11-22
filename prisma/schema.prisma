@@ -18,6 +18,18 @@ model User {
   createdAt    DateTime  @default(now())
   sessions     Session[]
   projects     Project[]
+  resets       PasswordReset[]
+}
+
+model PasswordReset {
+  id        String    @id // sha256 del token enviado por correo
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Session {

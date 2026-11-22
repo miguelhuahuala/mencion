@@ -11,10 +11,10 @@ import { parseJson, type BrandHit } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; cuenta?: string }> }) {
   const user = await currentUser();
-  if (!user) return <Landing />;
-  const { error } = await searchParams;
+  const { error, cuenta } = await searchParams;
+  if (!user) return <Landing deleted={cuenta === "eliminada"} />;
   const admin = isAdmin(user);
   const limits = limitsFor(user);
 

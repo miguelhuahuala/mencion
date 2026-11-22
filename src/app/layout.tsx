@@ -30,7 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             {user ? (
               <div className="flex items-center gap-3 text-sm">
-                <span className="hidden max-w-[200px] truncate text-muted sm:inline">{user.email}</span>
+                <Link href="/cuenta" className="max-w-[200px] truncate text-muted hover:text-ink" title="Mi cuenta">
+                  <span className="hidden sm:inline">{user.email}</span>
+                  <span className="sm:hidden">Mi cuenta</span>
+                </Link>
                 {user.role === "admin" && <span className="chip bg-accent-soft text-accent">admin</span>}
                 <form action={signOut}>
                   <button className="text-muted hover:text-ink">Salir</button>
@@ -39,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             ) : (
               <nav className="flex items-center gap-2 text-sm">
                 <Link href="/ingresar" className="px-2 text-muted hover:text-ink">Ingresar</Link>
-                <Link href="/registro" className="btn-primary px-3 py-1.5">Crear cuenta gratis</Link>
+                <Link href="/registro" className="btn-primary whitespace-nowrap px-3 py-1.5">Crear cuenta<span className="hidden sm:inline"> gratis</span></Link>
               </nav>
             )}
           </div>

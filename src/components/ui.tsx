@@ -1,5 +1,6 @@
 import type { Engine, Sentiment } from "@/lib/types";
 import { ENGINE_LABEL } from "@/lib/types";
+import { EngineLogo } from "./EngineLogo";
 
 export function Kpi({ label, value, hint }: { label: string; value: React.ReactNode; hint?: React.ReactNode }) {
   return (
@@ -34,17 +35,10 @@ export function Bar({ value, own }: { value: number; own?: boolean }) {
   );
 }
 
-const ENGINE_DOT: Record<Engine, string> = {
-  chatgpt: "bg-chatgpt",
-  claude: "bg-claude",
-  gemini: "bg-gemini",
-  perplexity: "bg-perplexity",
-};
-
 export function EngineTag({ engine }: { engine: Engine }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-      <span aria-hidden className={`size-2 rounded-full ${ENGINE_DOT[engine]}`} />
+      <EngineLogo engine={engine} size={15} />
       {ENGINE_LABEL[engine]}
     </span>
   );
