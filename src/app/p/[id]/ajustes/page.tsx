@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
+import { findProjectFor, limitsFor } from "@/lib/limits";
 import { ProjectForm } from "@/components/ProjectForm";
 import { deleteProject, updateProject } from "../../../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Ajustes" };
 
-export default async function SettingsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SettingsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
   const { id } = await params;
+  const { error } = await searchParams;
+  const user = await requireUser();
+  const allowed = await findProjectFor(id, user);
+  if (!allowed || allowed.isDemo) notFound();
   const project = await db.project.findUnique({ where: { id }, include: { prompts: true } });
   if (!project || project.isDemo) notFound();
 
@@ -19,8 +25,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">Ajustes</h1>
         <p className="text-sm text-muted">Quitar un prompt lo desactiva; su historial se conserva.</p>
       </div>
+      {error && <div role="alert" className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
       <section className="card p-6">
-        <ProjectForm action={updateProject} project={project} prompts={project.prompts} submitLabel="Guardar cambios" />
+        <ProjectForm action={updateProject} project={project} prompts={project.prompts} submitLabel="Guardar cambios" maxPrompts={limitsFor(user).maxPrompts} />
       </section>
       <section className="card flex items-center justify-between gap-4 border-bad/30 p-6">
         <div>

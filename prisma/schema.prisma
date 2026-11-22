@@ -9,8 +9,31 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         String    @default("user") // user | admin
+  consentAt    DateTime  // aceptación de la política de privacidad (Ley 29733)
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+  projects     Project[]
+}
+
+model Session {
+  id        String   @id // sha256 del token de la cookie
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
 model Project {
   id          String     @id @default(cuid())
+  userId      String?    // null = proyecto del administrador (creado antes de las cuentas) o demo
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String     // marca a monitorear, p.ej. "BCP"
   domain      String     // dominio propio, p.ej. "kaus.pe"
   aliases     String     @default("[]") // JSON string[]: otras formas de escribir la marca
@@ -21,6 +44,8 @@ model Project {
   createdAt   DateTime   @default(now())
   prompts     Prompt[]
   runs        Run[]
+
+  @@index([userId])
 }
 
 model Prompt {
@@ -44,6 +69,8 @@ model Run {
   costUsd    Float      @default(0)
   errorCount Int        @default(0)
   responses  Response[]
+
+  @@index([startedAt])
 }
 
 model Response {

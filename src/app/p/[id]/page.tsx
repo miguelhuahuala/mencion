@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { currentUser } from "@/lib/auth";
+import { findProjectFor, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
 import { canAnalyzeSentiment } from "@/lib/analysis";
-import { dateShort, dateTime, showDemo, usd } from "@/lib/format";
+import { dateShort, dateTime, usd } from "@/lib/format";
 import { ENGINE_LABEL } from "@/lib/types";
 import { Bar, DemoBanner, EngineTag, Kpi, Section, TrendLine } from "@/components/ui";
 import { runNow } from "../../actions";
@@ -14,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const p = await db.project.findUnique({ where: { id }, select: { name: true } });
+  const p = await findProjectFor(id, await currentUser());
   return { title: p?.name ?? "Proyecto" };
 }
 
@@ -27,14 +29,16 @@ export default async function ProjectPage({
 }) {
   const { id } = await params;
   const { error } = await searchParams;
-  const exists = await db.project.findUnique({ where: { id }, select: { isDemo: true } });
-  if (!exists || (exists.isDemo && !showDemo())) notFound();
+  const user = await currentUser();
+  if (!(await findProjectFor(id, user))) notFound();
 
   const d = await projectDashboard(id);
   const { project, kpis } = d;
   const activePrompts = project.prompts.filter((p) => p.active);
   const engines = d.byEngine.map((e) => e.engine);
   const hasSentiment = d.shareOfVoice.some((s) => s.positive + s.neutral + s.negative > 0);
+  const avail = project.isDemo || d.running ? null : await runAvailability(id, user);
+  const blocked = avail && !avail.ok ? avail : null;
 
   return (
     <div className="space-y-6">
@@ -55,7 +59,7 @@ export default async function ProjectPage({
             <Link href={`/p/${id}/ajustes`} className="btn-ghost">Ajustes</Link>
             <form action={runNow}>
               <input type="hidden" name="id" value={id} />
-              <button className="btn-primary" disabled={Boolean(d.running) || !hasCredentials()} title={hasCredentials() ? undefined : "Configura DataForSEO en .env"}>
+              <button className="btn-primary" disabled={Boolean(d.running) || !hasCredentials() || Boolean(blocked)}>
                 {d.running ? "Ejecutando…" : "Ejecutar ahora"}
               </button>
             </form>
@@ -63,6 +67,13 @@ export default async function ProjectPage({
         )}
       </div>
 
+      {blocked && (
+        <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
+          {blocked.reason === "interval"
+            ? <>Tu plan incluye una medición por semana. La próxima estará disponible el <strong className="text-ink">{dateTime(blocked.nextAt!)}</strong>.</>
+            : "Alcanzamos el límite de mediciones de este mes. Vuelve a intentarlo el próximo mes."}
+        </div>
+      )}
       {!project.isDemo && !hasCredentials() && (
         <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm">
           Para ejecutar, agrega <code className="font-mono">DATAFORSEO_LOGIN</code> y <code className="font-mono">DATAFORSEO_PASSWORD</code> en{" "}

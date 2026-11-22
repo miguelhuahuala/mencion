@@ -12,11 +12,13 @@ export function ProjectForm({
   project,
   prompts,
   submitLabel,
+  maxPrompts,
 }: {
   action: (form: FormData) => Promise<void>;
   project?: Project;
   prompts?: Prompt[];
   submitLabel: string;
+  maxPrompts: number;
 }) {
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
@@ -52,12 +54,12 @@ export function ProjectForm({
         <textarea name="competitors" rows={4} defaultValue={project ? competitorLines(competitorsOf(project)) : ""} placeholder={"Interbank | interbank.pe\nBBVA | bbva.pe | BBVA Perú"} className="input mt-1 font-mono text-xs font-normal normal-case tracking-normal" />
       </label>
       <label className="label sm:col-span-2">
-        Prompts a seguir — uno por línea (lo que tus clientes le preguntan a la IA)
+        Prompts a seguir — uno por línea, máximo {maxPrompts} (lo que tus clientes le preguntan a la IA)
         <textarea name="prompts" rows={7} required defaultValue={prompts?.filter((p) => p.active).map((p) => p.text).join("\n")} placeholder={"¿Cuál es el mejor banco del Perú?\n¿Qué banco tiene la mejor app móvil en Perú?"} className="input mt-1 text-sm font-normal normal-case tracking-normal" />
       </label>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="btn-primary">{submitLabel}</button>
-        <span className="text-xs text-muted">Cada corrida consulta cada prompt en ChatGPT, Claude, Gemini y Perplexity.</span>
+        <span className="text-xs text-muted">Cada medición consulta cada prompt en ChatGPT, Claude, Gemini y Perplexity.</span>
       </div>
     </form>
   );

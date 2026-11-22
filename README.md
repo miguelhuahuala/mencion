@@ -19,6 +19,12 @@ competencia.
 | Sentimiento | Claude clasifica cada mención en positiva / neutral / negativa (opcional) |
 | Fuentes top | dominios que más enlazan las IAs, para saber dónde conseguir presencia |
 
+## Cuentas y plan gratis
+
+Cualquier persona crea su cuenta con correo y contraseña. El plan gratis incluye 1 proyecto, 5 prompts y 1 medición cada
+7 días en las 4 IAs; todos esos límites se ajustan por variables de entorno. Hay además un tope de gasto mensual para toda
+la plataforma (`MAX_MONTHLY_SPEND_USD`), y los correos de `ADMIN_EMAILS` no tienen límites.
+
 ## Arquitectura
 
 ```
@@ -31,6 +37,8 @@ prompts ──► DataForSEO AI Optimization API ──► detección de marcas 
 - `src/lib/analysis.ts`: detección determinista de menciones (nombre, alias, dominio; sin tildes) más sentimiento con Claude usando salida estructurada.
 - `src/lib/runner.ts`: ejecuta prompts × motores con concurrencia limitada y guarda costo y errores por consulta.
 - `src/lib/stats.ts`: KPIs, share of voice, tendencia y dominios citados.
+- `src/lib/auth.ts`: cuentas con contraseña cifrada con scrypt y sesiones en base de datos con cookie httpOnly.
+- `src/lib/limits.ts`: límites por plan, tope de gasto mensual y control de acceso a los proyectos.
 - Stack: Next.js 16, Prisma 7 + SQLite (se cambia a Postgres en producción) y Tailwind 4.
 
 ## Puesta en marcha
@@ -52,7 +60,7 @@ Variables (`.env`):
 
 ## Despliegue
 
-Guía paso a paso (Railway, dominio y cron): [docs/DEPLOY.md](docs/DEPLOY.md). En producción define `APP_PASSWORD`.
+Guía paso a paso (Railway, dominio y cron): [docs/DEPLOY.md](docs/DEPLOY.md). En producción define `ADMIN_EMAILS` y `MAX_MONTHLY_SPEND_USD`.
 
 ## Corrida diaria
 
@@ -64,6 +72,7 @@ npm run track   # ejecuta todos los proyectos; prográmalo con cron
 
 - ChatGPT (LLM Scraper Live): unos $0.004 por prompt
 - Claude, Gemini y Perplexity (LLM Responses Live): $0.0006 por tarea más lo que cobra el modelo
+- Medido el 22-nov-2026 (Claude Haiku 5.5, Gemini 3.8 Flash, Sonar y ChatGPT): unos $0.04 por prompt en las 4 IAs
 - 25 prompts × 4 IAs al día ≈ 3.000 consultas al mes; el costo real de cada corrida aparece en el dashboard
 
 ## Honestidad de datos

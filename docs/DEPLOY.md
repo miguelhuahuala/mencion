@@ -43,9 +43,11 @@ npm run dev
 
 ## 2. Publicar en menciones.org (Railway)
 
-La app necesita un servidor Node que siga encendido, porque las corridas trabajan en segundo plano, y un disco para la
-base SQLite. Railway ofrece las dos cosas sin cambiar código. Vercel no sirve tal como está: es serverless y corta
-las corridas a la mitad.
+Mencion es un sitio web: los usuarios entran desde el navegador, sin instalar nada. Para funcionar necesita un servidor
+Node siempre encendido, porque las mediciones trabajan en segundo plano, y un disco para la base de datos SQLite.
+Railway ofrece las dos cosas sin cambiar código. El hosting compartido (Banahosting, cPanel) no sirve para la app,
+aunque puedes seguir usándolo para el DNS del dominio. Vercel tampoco sirve tal como está: es serverless y corta las
+mediciones a la mitad.
 
 ### 2.1 Crear el servicio
 1. Entra a https://railway.com con tu cuenta de GitHub. El plan Hobby es de pago, con un mínimo mensual bajo.
@@ -57,8 +59,12 @@ las corridas a la mitad.
 |---|---|
 | `DATABASE_URL` | `file:/data/mencion.db` |
 | `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` | tus credenciales de API |
-| `APP_PASSWORD` | una contraseña larga; **obligatoria**, sin ella cualquiera gasta tus créditos |
+| `ADMIN_EMAILS` | tu correo; esa cuenta no tiene límites y hereda los proyectos creados antes de las cuentas |
+| `FREE_MAX_PROJECTS` / `FREE_MAX_PROMPTS` / `FREE_RUN_INTERVAL_DAYS` | `1` / `5` / `7` (plan gratis) |
+| `MAX_MONTHLY_SPEND_USD` | tope mensual de gasto en DataForSEO, por ejemplo `30`; al llegar, se pausan las mediciones gratis |
 | `CRON_SECRET` | resultado de `openssl rand -hex 24` |
+| `ALLOW_INDEXING` | `true` para que Google indexe la landing |
+| `CONTACT_EMAIL` | correo para solicitudes de privacidad (Ley 29733), p. ej. `contacto@menciones.org` |
 | `SITE_URL` | `https://menciones.org` |
 | `MODEL_CLAUDE`, `MODEL_GEMINI`, `MODEL_PERPLEXITY` | los mismos que validaste en el paso 1.3 |
 | `ANTHROPIC_API_KEY` | opcional |
@@ -67,9 +73,12 @@ las corridas a la mitad.
 Railway detecta Node y ejecuta `npm run build` y luego `npm start`. `npm start` aplica las migraciones a la base del
 volumen y levanta la app en el puerto que asigna Railway.
 
+No definas `APP_PASSWORD` si quieres que el sitio sea público: esa variable protege todo el sitio con una sola
+contraseña y solo sirve para un entorno de pruebas.
+
 ### 2.3 Comprobar
-En **Settings → Networking → Generate Domain** obtienes una URL `*.up.railway.app`. Al abrirla, el navegador te pide
-usuario y contraseña: el usuario puede ser cualquiera y la contraseña es `APP_PASSWORD`.
+1. En **Settings → Networking → Generate Domain** obtienes una URL `*.up.railway.app`. Ábrela y verás la landing.
+2. Crea tu cuenta con el correo que pusiste en `ADMIN_EMAILS`; aparecerá con la etiqueta **admin**.
 
 ### 2.4 Conectar menciones.org
 1. Si todavía no tienes el dominio, cómpralo (Cloudflare, Namecheap, Porkbun, etc.).
@@ -84,17 +93,18 @@ usuario y contraseña: el usuario puede ser cualquiera y la contraseña es `APP_
 ## 3. Medición diaria automática
 
 El repo trae `.github/workflows/corrida-diaria.yml`, que llama a `/api/cron` todos los días a las 7:00 (hora de Perú).
+Cada proyecto se mide según el plan de su dueño: los del plan gratis, cada 7 días; los del administrador, a diario.
 
 1. En GitHub: **mencion → Settings → Secrets and variables → Actions → New repository secret**:
    - `MENCION_URL` = `https://menciones.org`
    - `CRON_SECRET` = el mismo valor que pusiste en Railway
-2. Pruébalo en **Actions → Corrida diaria → Run workflow**. Debe responder `{"started":[...]}`.
+2. Pruébalo en **Actions → Corrida diaria → Run workflow**. Debe responder `{"results":[...]}`.
 
 ---
 
 ## Costo estimado mensual
-- **DataForSEO:** prompts × 4 IAs × 30 días. Con 10 prompts son unas 1.200 consultas; el costo real de cada corrida
-  aparece en el dashboard.
+- **DataForSEO, medido el 22-nov-2026 con Claude Haiku:** unos $0.04 por prompt en las 4 IAs. Cada usuario gratis
+  (5 prompts, semanal) cuesta unos $0.20 por semana, menos de $1 al mes. `MAX_MONTHLY_SPEND_USD` pone un tope.
 - **Railway:** plan Hobby.
 - **Dominio:** pago anual según el proveedor.
 - **Claude (sentimiento):** opcional; pocos centavos por corrida.
@@ -102,7 +112,7 @@ El repo trae `.github/workflows/corrida-diaria.yml`, que llama a `/api/cron` tod
 ## Problemas frecuentes
 | Síntoma | Causa probable |
 |---|---|
-| Botón "Ejecutar ahora" gris | faltan `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` |
+| Botón "Ejecutar ahora" gris | ya hubo una medición esta semana (plan gratis), se llegó al tope mensual o faltan las credenciales de DataForSEO |
 | Error `40501` / "Invalid Field" en una IA | modelo no válido: corre `npm run models` y actualiza la variable |
 | Error de saldo | recarga créditos en DataForSEO |
 | Los datos desaparecen tras desplegar | el volumen no está montado en `/data` o `DATABASE_URL` no apunta ahí |

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { dateTime, showDemo, usd } from "@/lib/format";
+import { dateTime, usd } from "@/lib/format";
+import { currentUser } from "@/lib/auth";
+import { findProjectFor } from "@/lib/limits";
 import { parseJson, type BrandHit, type Engine, type Source } from "@/lib/types";
 import { DemoBanner, EngineTag, SentimentChip } from "@/components/ui";
 import { Markdown, plain } from "@/components/Markdown";
@@ -12,7 +14,7 @@ export const metadata = { title: "Respuesta" };
 export default async function ResponsePage({ params }: { params: Promise<{ id: string; rid: string }> }) {
   const { id, rid } = await params;
   const r = await db.response.findUnique({ where: { id: rid }, include: { prompt: true, run: { include: { project: true } } } });
-  if (!r || r.run.projectId !== id || (r.run.project.isDemo && !showDemo())) notFound();
+  if (!r || r.run.projectId !== id || !(await findProjectFor(id, await currentUser()))) notFound();
   const hits = parseJson<BrandHit[]>(r.mentions, []);
   const sources = parseJson<Source[]>(r.sources, []);
 

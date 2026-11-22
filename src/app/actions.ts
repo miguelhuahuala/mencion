@@ -6,6 +6,9 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { startRun } from "@/lib/runner";
 import { parseCompetitorLines } from "@/lib/projects";
+import { requireUser } from "@/lib/auth";
+import { findProjectFor, limitsFor, runAvailability } from "@/lib/limits";
+import { dateTime } from "@/lib/format";
 
 const ProjectInput = z.object({
   name: z.string().trim().min(1, "Falta el nombre de la marca").max(80),
@@ -17,31 +20,45 @@ const ProjectInput = z.object({
   prompts: z.string().max(20000),
 });
 
-function read(form: FormData) {
-  const parsed = ProjectInput.parse(Object.fromEntries(["name", "domain", "aliases", "competitors", "country", "language", "prompts"].map((k) => [k, String(form.get(k) ?? "")])));
+const fail = (path: string, msg: string): never => redirect(`${path}?error=${encodeURIComponent(msg)}`);
+
+function read(form: FormData, maxPrompts: number, errorPath: string) {
+  const parsed = ProjectInput.safeParse(
+    Object.fromEntries(["name", "domain", "aliases", "competitors", "country", "language", "prompts"].map((k) => [k, String(form.get(k) ?? "")])),
+  );
+  if (!parsed.success) return fail(errorPath, parsed.error.issues[0].message);
+  const d = parsed.data;
+  const prompts = [...new Set(d.prompts.split("\n").map((p) => p.trim().slice(0, 500)).filter(Boolean))];
+  if (!prompts.length) return fail(errorPath, "Agrega al menos un prompt");
+  if (prompts.length > maxPrompts) return fail(errorPath, `Tu plan permite hasta ${maxPrompts} prompts por proyecto (escribiste ${prompts.length}).`);
   return {
-    name: parsed.name,
-    domain: parsed.domain.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "").toLowerCase(),
-    aliases: JSON.stringify(parsed.aliases.split(",").map((a) => a.trim()).filter(Boolean)),
-    competitors: JSON.stringify(parseCompetitorLines(parsed.competitors).slice(0, 10)),
-    country: parsed.country.toUpperCase(),
-    language: parsed.language.toLowerCase(),
-    prompts: parsed.prompts.split("\n").map((p) => p.trim()).filter(Boolean).slice(0, 100).map((p) => p.slice(0, 500)),
+    name: d.name,
+    domain: d.domain.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "").toLowerCase(),
+    aliases: JSON.stringify(d.aliases.split(",").map((a) => a.trim()).filter(Boolean)),
+    competitors: JSON.stringify(parseCompetitorLines(d.competitors).slice(0, 10)),
+    country: d.country.toUpperCase(),
+    language: d.language.toLowerCase(),
+    prompts,
   };
 }
 
 export async function createProject(form: FormData) {
-  const { prompts, ...data } = read(form);
-  const project = await db.project.create({ data: { ...data, prompts: { create: prompts.map((text) => ({ text })) } } });
+  const user = await requireUser();
+  const limits = limitsFor(user);
+  const count = await db.project.count({ where: { userId: user.id } });
+  if (count >= limits.maxProjects) fail("/", `Tu plan permite ${limits.maxProjects} proyecto. Edita el que ya tienes.`);
+  const { prompts, ...data } = read(form, limits.maxPrompts, "/");
+  const project = await db.project.create({ data: { ...data, userId: user.id, prompts: { create: prompts.map((text) => ({ text })) } } });
   redirect(`/p/${project.id}`);
 }
 
 export async function updateProject(form: FormData) {
+  const user = await requireUser();
   const id = String(form.get("id"));
-  const { prompts, ...data } = read(form);
-  const project = await db.project.findUniqueOrThrow({ where: { id }, include: { prompts: true } });
-  if (project.isDemo) throw new Error("El proyecto de demostración no se puede editar.");
-  const existing = new Map(project.prompts.map((p) => [p.text, p]));
+  const found = await findProjectFor(id, user);
+  if (!found || found.isDemo) fail("/", "Proyecto no encontrado");
+  const { prompts, ...data } = read(form, limitsFor(user).maxPrompts, `/p/${id}/ajustes`);
+  const existing = new Set((await db.prompt.findMany({ where: { projectId: id }, select: { text: true } })).map((p) => p.text));
   await db.$transaction([
     db.project.update({ where: { id }, data }),
     // Desactiva los prompts quitados (se conserva su historial) y crea/reactiva los nuevos
@@ -53,18 +70,33 @@ export async function updateProject(form: FormData) {
 }
 
 export async function runNow(form: FormData) {
+  const user = await requireUser();
   const id = String(form.get("id"));
+  const project = await findProjectFor(id, user);
+  if (!project || project.isDemo) fail("/", "Proyecto no encontrado");
+  const avail = await runAvailability(id, user);
+  if (!avail.ok) {
+    fail(
+      `/p/${id}`,
+      avail.reason === "interval"
+        ? `Tu plan incluye una medición por semana. La próxima estará disponible el ${dateTime(avail.nextAt!)}.`
+        : "Alcanzamos el límite de mediciones de este mes. Vuelve a intentarlo el próximo mes.",
+    );
+  }
   try {
     await startRun(id); // la corrida sigue en segundo plano; la página se refresca sola
   } catch (e) {
-    redirect(`/p/${id}?error=${encodeURIComponent(e instanceof Error ? e.message : "Error al ejecutar")}`);
+    fail(`/p/${id}`, e instanceof Error ? e.message : "Error al ejecutar");
   }
   revalidatePath(`/p/${id}`);
   redirect(`/p/${id}`);
 }
 
 export async function deleteProject(form: FormData) {
+  const user = await requireUser();
   const id = String(form.get("id"));
-  await db.project.delete({ where: { id, isDemo: false } });
+  const project = await findProjectFor(id, user);
+  if (!project || project.isDemo) fail("/", "Proyecto no encontrado");
+  await db.project.delete({ where: { id } });
   redirect("/");
 }
