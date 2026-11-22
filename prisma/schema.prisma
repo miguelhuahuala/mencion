@@ -1,0 +1,66 @@
+// Mención — modelo de datos (SQLite en desarrollo; para Postgres cambiar provider y adapter)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id          String     @id @default(cuid())
+  name        String     // marca a monitorear, p.ej. "Kaus"
+  domain      String     // dominio propio, p.ej. "kaus.pe"
+  aliases     String     @default("[]") // JSON string[]: otras formas de escribir la marca
+  competitors String     @default("[]") // JSON {name, domain, aliases[]}[]
+  country     String     @default("PE") // ISO-2 para búsqueda web localizada
+  language    String     @default("es")
+  isDemo      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  prompts     Prompt[]
+  runs        Run[]
+}
+
+model Prompt {
+  id        String     @id @default(cuid())
+  projectId String
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  text      String
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  responses Response[]
+}
+
+model Run {
+  id         String     @id @default(cuid())
+  projectId  String
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status     String     @default("running") // running | done | failed
+  mode       String     @default("live")    // live | sandbox | demo
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+  costUsd    Float      @default(0)
+  errorCount Int        @default(0)
+  responses  Response[]
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  runId     String
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  promptId  String
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  engine    String   // chatgpt | claude | gemini | perplexity
+  model     String   @default("")
+  text      String   @default("")
+  sources   String   @default("[]") // JSON {title,url,domain}[]
+  mentions  String   @default("[]") // JSON BrandHit[] (ver src/lib/analysis.ts)
+  costUsd   Float    @default(0)
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([runId])
+  @@index([promptId, engine])
+}
