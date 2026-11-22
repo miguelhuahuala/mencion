@@ -11,7 +11,7 @@ datasource db {
 
 model Project {
   id          String     @id @default(cuid())
-  name        String     // marca a monitorear, p.ej. "Kaus"
+  name        String     // marca a monitorear, p.ej. "BCP"
   domain      String     // dominio propio, p.ej. "kaus.pe"
   aliases     String     @default("[]") // JSON string[]: otras formas de escribir la marca
   competitors String     @default("[]") // JSON {name, domain, aliases[]}[]

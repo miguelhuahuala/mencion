@@ -70,7 +70,7 @@ export async function projectDashboard(projectId: string) {
 
   // Dominios más citados como fuente
   const domainCount = new Map<string, number>();
-  for (const r of ok) for (const d of new Set(r.sources.map((s) => s.domain).filter(Boolean))) domainCount.set(d, (domainCount.get(d) ?? 0) + 1);
+  for (const r of ok) for (const d of new Set(r.sources.map((s) => s.domain.replace(/^www\./, "")).filter(Boolean))) domainCount.set(d, (domainCount.get(d) ?? 0) + 1);
   const topDomains = [...domainCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([domain, count]) => ({ domain, count, share: pct(count, ok.length) }));
 
   // Tendencia: visibilidad propia por corrida terminada

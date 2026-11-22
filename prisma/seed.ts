@@ -18,7 +18,7 @@ let seed = 42;
 const rand = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const pick = <T,>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
 
-const own: Competitor = { name: "Kaus", domain: "kaus.example", aliases: ["Kaus App"] };
+const own: Competitor = { name: "Nutrilia", domain: "nutrilia.example", aliases: ["Nutrilia App"] };
 const competitors: Competitor[] = [
   { name: "Balanzia", domain: "balanzia.example", aliases: [] },
   { name: "FitLima", domain: "fitlima.example", aliases: ["Fit Lima"] },
@@ -38,10 +38,10 @@ const sourcePool = ["blog-salud.example", "revista-nutricion.example", "foro-fit
 
 // Probabilidad de que cada motor mencione cada marca (para que la demo cuente una historia)
 const bias: Record<string, Record<string, number>> = {
-  chatgpt: { Kaus: 0.55, Balanzia: 0.7, FitLima: 0.45, Vitalo: 0.3 },
-  claude: { Kaus: 0.4, Balanzia: 0.6, FitLima: 0.35, Vitalo: 0.25 },
-  gemini: { Kaus: 0.3, Balanzia: 0.75, FitLima: 0.5, Vitalo: 0.4 },
-  perplexity: { Kaus: 0.65, Balanzia: 0.55, FitLima: 0.3, Vitalo: 0.2 },
+  chatgpt: { Nutrilia: 0.55, Balanzia: 0.7, FitLima: 0.45, Vitalo: 0.3 },
+  claude: { Nutrilia: 0.4, Balanzia: 0.6, FitLima: 0.35, Vitalo: 0.25 },
+  gemini: { Nutrilia: 0.3, Balanzia: 0.75, FitLima: 0.5, Vitalo: 0.4 },
+  perplexity: { Nutrilia: 0.65, Balanzia: 0.55, FitLima: 0.3, Vitalo: 0.2 },
 };
 const phrases = {
   positive: ["destaca por su coach con IA que adapta el plan a comida local", "es muy recomendada por usuarios que buscan acompañamiento diario", "ofrece un seguimiento cercano y fácil de usar"],

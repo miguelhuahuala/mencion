@@ -1,6 +1,6 @@
 # Lanza la medición diaria llamando a /api/cron de la app desplegada.
 # Requiere en GitHub → Settings → Secrets and variables → Actions:
-#   MENCION_URL  (p. ej. https://mencion.org)   y   CRON_SECRET (el mismo valor que en el servidor)
+#   MENCION_URL  (p. ej. https://menciones.org)   y   CRON_SECRET (el mismo valor que en el servidor)
 name: Corrida diaria
 
 on:

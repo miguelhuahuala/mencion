@@ -116,7 +116,7 @@ export async function askEngine(
       engine,
       model: String(result.model ?? "chatgpt"),
       text: String(result.markdown ?? ""),
-      sources: dedupe(raw.filter((s) => s.url).map((s) => ({ title: s.title ?? "", url: s.url!, domain: s.domain || domainOf(s.url!) }))),
+      sources: dedupe(raw.filter((s) => s.url).map((s) => ({ title: s.title ?? "", url: s.url!, domain: (s.domain || domainOf(s.url!)).replace(/^www\./, "") }))),
       costUsd: cost,
     };
   }

@@ -1,6 +1,6 @@
 # Poner Mencion en funcionamiento
 
-Hay tres etapas: 1) probar con datos reales en tu computadora, 2) publicar la app en mencion.org y 3) automatizar la
+Hay tres etapas: 1) probar con datos reales en tu computadora, 2) publicar la app en menciones.org y 3) automatizar la
 medición diaria.
 
 ---
@@ -41,7 +41,7 @@ npm run dev
 
 ---
 
-## 2. Publicar en mencion.org (Railway)
+## 2. Publicar en menciones.org (Railway)
 
 La app necesita un servidor Node que siga encendido, porque las corridas trabajan en segundo plano, y un disco para la
 base SQLite. Railway ofrece las dos cosas sin cambiar código. Vercel no sirve tal como está: es serverless y corta
@@ -59,7 +59,7 @@ las corridas a la mitad.
 | `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` | tus credenciales de API |
 | `APP_PASSWORD` | una contraseña larga; **obligatoria**, sin ella cualquiera gasta tus créditos |
 | `CRON_SECRET` | resultado de `openssl rand -hex 24` |
-| `SITE_URL` | `https://mencion.org` |
+| `SITE_URL` | `https://menciones.org` |
 | `MODEL_CLAUDE`, `MODEL_GEMINI`, `MODEL_PERPLEXITY` | los mismos que validaste en el paso 1.3 |
 | `ANTHROPIC_API_KEY` | opcional |
 | `SHOW_DEMO_DATA` | `false` (o `true` si cargas la demo) |
@@ -71,12 +71,12 @@ volumen y levanta la app en el puerto que asigna Railway.
 En **Settings → Networking → Generate Domain** obtienes una URL `*.up.railway.app`. Al abrirla, el navegador te pide
 usuario y contraseña: el usuario puede ser cualquiera y la contraseña es `APP_PASSWORD`.
 
-### 2.4 Conectar mencion.org
+### 2.4 Conectar menciones.org
 1. Si todavía no tienes el dominio, cómpralo (Cloudflare, Namecheap, Porkbun, etc.).
-2. En Railway: **Settings → Networking → Custom Domain →** `mencion.org`. Railway te muestra un registro DNS.
-3. Crea ese registro en tu proveedor de DNS. Para el dominio raíz (`mencion.org`, sin `www`) el proveedor debe
+2. En Railway: **Settings → Networking → Custom Domain →** `menciones.org`. Railway te muestra un registro DNS.
+3. Crea ese registro en tu proveedor de DNS. Para el dominio raíz (`menciones.org`, sin `www`) el proveedor debe
    aceptar CNAME en la raíz (lo llaman "CNAME flattening" o "ALIAS"); Cloudflare lo hace gratis. Agrega también
-   `www.mencion.org` si lo quieres.
+   `www.menciones.org` si lo quieres.
 4. Espera a que Railway marque el dominio como verificado. El certificado HTTPS es automático.
 
 ---
@@ -86,7 +86,7 @@ usuario y contraseña: el usuario puede ser cualquiera y la contraseña es `APP_
 El repo trae `.github/workflows/corrida-diaria.yml`, que llama a `/api/cron` todos los días a las 7:00 (hora de Perú).
 
 1. En GitHub: **mencion → Settings → Secrets and variables → Actions → New repository secret**:
-   - `MENCION_URL` = `https://mencion.org`
+   - `MENCION_URL` = `https://menciones.org`
    - `CRON_SECRET` = el mismo valor que pusiste en Railway
 2. Pruébalo en **Actions → Corrida diaria → Run workflow**. Debe responder `{"started":[...]}`.
 

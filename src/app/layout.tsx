@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "https://mencion.org"),
+  metadataBase: new URL(process.env.SITE_URL ?? "https://menciones.org"),
   title: { default: "Mencion — visibilidad de tu marca en las IAs", template: "%s · Mencion" },
   description: "Mide cuántas veces ChatGPT, Claude, Gemini y Perplexity mencionan tu marca frente a tu competencia.",
   robots: { index: false, follow: false },

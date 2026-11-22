@@ -43,7 +43,7 @@ export function detectMentions(text: string, sources: Source[], own: Competitor,
   const found = brands.map((b) => {
     const idx = firstIndex(hay, [b.name, ...b.aliases, b.domain].filter(Boolean));
     const d = norm(b.domain);
-    const cited = Boolean(d) && sources.some((s) => s.domain === d || s.domain.endsWith(`.${d}`));
+    const cited = Boolean(d) && sources.some((s) => { const sd = s.domain.replace(/^www\./, ""); return sd === d || sd.endsWith(`.${d}`); });
     return { b, idx, cited };
   });
   const order = found.filter((f) => f.idx >= 0).sort((a, z) => a.idx - z.idx);

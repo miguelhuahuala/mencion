@@ -4,9 +4,9 @@
 tus clientes y mide en cuántas respuestas apareces, en qué posición, con qué tono y qué fuentes citan, frente a tu
 competencia.
 
-🌐 [mencion.org](https://mencion.org)
+🌐 [menciones.org](https://menciones.org)
 
-![Dashboard de Mencion (proyecto demo con datos ficticios)](docs/dashboard.jpg)
+![Dashboard de Mencion: BCP frente a los principales bancos del Perú (medición real, 22-nov-2026)](docs/dashboard.jpg)
 
 ## Qué mide
 

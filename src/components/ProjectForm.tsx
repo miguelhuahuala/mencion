@@ -23,15 +23,15 @@ export function ProjectForm({
       {project ? <input type="hidden" name="id" value={project.id} /> : null}
       <label className="label">
         Marca
-        <input name="name" required maxLength={80} defaultValue={project?.name} placeholder="Kaus" className="input mt-1 font-normal normal-case tracking-normal" />
+        <input name="name" required maxLength={80} defaultValue={project?.name} placeholder="BCP" className="input mt-1 font-normal normal-case tracking-normal" />
       </label>
       <label className="label">
         Dominio
-        <input name="domain" maxLength={120} defaultValue={project?.domain} placeholder="kaus.pe" className="input mt-1 font-normal normal-case tracking-normal" />
+        <input name="domain" maxLength={120} defaultValue={project?.domain} placeholder="viabcp.com" className="input mt-1 font-normal normal-case tracking-normal" />
       </label>
       <label className="label sm:col-span-2">
         Otras formas de escribir la marca (separadas por coma)
-        <input name="aliases" defaultValue={project ? parseJson<string[]>(project.aliases, []).join(", ") : ""} placeholder="Kaus App, Kaus Coach" className="input mt-1 font-normal normal-case tracking-normal" />
+        <input name="aliases" defaultValue={project ? parseJson<string[]>(project.aliases, []).join(", ") : ""} placeholder="Banco de Crédito del Perú, Banco de Credito" className="input mt-1 font-normal normal-case tracking-normal" />
       </label>
       <label className="label">
         País de búsqueda
@@ -49,11 +49,11 @@ export function ProjectForm({
       </label>
       <label className="label sm:col-span-2">
         Competidores — uno por línea: <span className="font-mono normal-case">Marca | dominio.com | alias</span>
-        <textarea name="competitors" rows={4} defaultValue={project ? competitorLines(competitorsOf(project)) : ""} placeholder={"MyFitnessPal | myfitnesspal.com\nYazio | yazio.com"} className="input mt-1 font-mono text-xs font-normal normal-case tracking-normal" />
+        <textarea name="competitors" rows={4} defaultValue={project ? competitorLines(competitorsOf(project)) : ""} placeholder={"Interbank | interbank.pe\nBBVA | bbva.pe | BBVA Perú"} className="input mt-1 font-mono text-xs font-normal normal-case tracking-normal" />
       </label>
       <label className="label sm:col-span-2">
         Prompts a seguir — uno por línea (lo que tus clientes le preguntan a la IA)
-        <textarea name="prompts" rows={7} required defaultValue={prompts?.filter((p) => p.active).map((p) => p.text).join("\n")} placeholder={"¿Cuál es la mejor app para bajar de peso en Perú?\nApps con coach de nutrición con IA en español"} className="input mt-1 text-sm font-normal normal-case tracking-normal" />
+        <textarea name="prompts" rows={7} required defaultValue={prompts?.filter((p) => p.active).map((p) => p.text).join("\n")} placeholder={"¿Cuál es el mejor banco del Perú?\n¿Qué banco tiene la mejor app móvil en Perú?"} className="input mt-1 text-sm font-normal normal-case tracking-normal" />
       </label>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="btn-primary">{submitLabel}</button>
