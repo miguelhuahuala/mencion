@@ -30,7 +30,7 @@ export default async function Home() {
       <section className="max-w-2xl">
         <h1 className="text-3xl font-semibold tracking-tight">¿Las IAs recomiendan tu marca?</h1>
         <p className="mt-2 text-muted">
-          Mención pregunta lo mismo que tus clientes a ChatGPT, Claude, Gemini y Perplexity, y mide en cuántas respuestas apareces,
+          Mencion pregunta lo mismo que tus clientes a ChatGPT, Claude, Gemini y Perplexity, y mide en cuántas respuestas apareces,
           en qué posición, con qué tono y qué fuentes citan — frente a tu competencia.
         </p>
       </section>

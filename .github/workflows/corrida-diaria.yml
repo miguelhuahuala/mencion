@@ -1,0 +1,21 @@
+# Lanza la medición diaria llamando a /api/cron de la app desplegada.
+# Requiere en GitHub → Settings → Secrets and variables → Actions:
+#   MENCION_URL  (p. ej. https://mencion.org)   y   CRON_SECRET (el mismo valor que en el servidor)
+name: Corrida diaria
+
+on:
+  schedule:
+    - cron: "0 12 * * *" # 07:00 hora de Perú (UTC-5)
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar a /api/cron
+        env:
+          MENCION_URL: ${{ secrets.MENCION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$MENCION_URL" ] || [ -z "$CRON_SECRET" ]; then echo "Faltan secretos; se omite."; exit 0; fi
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$MENCION_URL/api/cron"

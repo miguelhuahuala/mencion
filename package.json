@@ -2,11 +2,11 @@
   "name": "mencion",
   "version": "0.1.0",
   "private": true,
-  "description": "Mención — monitor de visibilidad de marca en respuestas de IA (ChatGPT, Claude, Gemini, Perplexity) vía DataForSEO.",
+  "description": "Mencion \u2014 monitor de visibilidad de marca en respuestas de IA (ChatGPT, Claude, Gemini, Perplexity) v\u00eda DataForSEO.",
   "scripts": {
     "dev": "next dev -p 3030",
     "build": "prisma generate && next build",
-    "start": "next start -p 3030",
+    "start": "prisma migrate deploy && next start -p ${PORT:-3030}",
     "typecheck": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
@@ -19,10 +19,13 @@
     "@prisma/adapter-better-sqlite3": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "better-sqlite3": "^13.2.0",
+    "dotenv": "^18.0.10",
     "next": "16.4.6",
+    "prisma": "^7.10.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
+    "tsx": "^4.23.15",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -31,10 +34,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^18.0.10",
-    "prisma": "^7.10.1",
     "tailwindcss": "4.3.3",
-    "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

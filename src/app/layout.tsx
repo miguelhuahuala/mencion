@@ -8,7 +8,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", di
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "https://mencion.org"),
-  title: { default: "Mención — visibilidad de tu marca en las IAs", template: "%s · Mención" },
+  title: { default: "Mencion — visibilidad de tu marca en las IAs", template: "%s · Mencion" },
   description: "Mide cuántas veces ChatGPT, Claude, Gemini y Perplexity mencionan tu marca frente a tu competencia.",
   robots: { index: false, follow: false },
 };
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <span aria-hidden className="grid size-7 place-items-center rounded-lg bg-accent font-mono text-sm text-white">“</span>
-              Mención
+              Mencion
             </Link>
             <span className="hidden text-xs text-muted sm:inline">Visibilidad de marca en respuestas de IA</span>
           </div>

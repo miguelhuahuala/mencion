@@ -1,12 +1,12 @@
-# Mención
+# Mencion
 
-**¿Las IAs recomiendan tu marca?** Mención le hace a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que
+**¿Las IAs recomiendan tu marca?** Mencion le hace a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que
 tus clientes y mide en cuántas respuestas apareces, en qué posición, con qué tono y qué fuentes citan, frente a tu
 competencia.
 
 🌐 [mencion.org](https://mencion.org)
 
-![Dashboard de Mención (proyecto demo con datos ficticios)](docs/dashboard.jpg)
+![Dashboard de Mencion (proyecto demo con datos ficticios)](docs/dashboard.jpg)
 
 ## Qué mide
 
@@ -49,6 +49,10 @@ Variables (`.env`):
 - `ANTHROPIC_API_KEY`: opcional, activa el análisis de sentimiento
 - `MODEL_CLAUDE`, `MODEL_GEMINI`, `MODEL_PERPLEXITY`: modelos por motor (`npm run models` lista los disponibles)
 - `SHOW_DEMO_DATA=true`: muestra el proyecto demo, marcado como tal en la interfaz
+
+## Despliegue
+
+Guía paso a paso (Railway, dominio y cron): [docs/DEPLOY.md](docs/DEPLOY.md). En producción define `APP_PASSWORD`.
 
 ## Corrida diaria
 

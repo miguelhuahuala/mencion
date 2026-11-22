@@ -1,4 +1,4 @@
-// Mención — modelo de datos (SQLite en desarrollo; para Postgres cambiar provider y adapter)
+// Mencion — modelo de datos (SQLite en desarrollo; para Postgres cambiar provider y adapter)
 
 generator client {
   provider = "prisma-client"

@@ -21,6 +21,11 @@ export async function startRun(projectId: string, engines: readonly Engine[] = E
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId }, include: { prompts: { where: { active: true } } } });
   if (project.isDemo) throw new Error("El proyecto de demostración no se ejecuta contra la API.");
   if (!project.prompts.length) throw new Error("Agrega al menos un prompt antes de ejecutar.");
+  // Una corrida "running" de hace más de 30 min quedó huérfana (p. ej. reinicio del servidor): se marca fallida.
+  await db.run.updateMany({
+    where: { projectId, status: "running", startedAt: { lt: new Date(Date.now() - 30 * 60_000) } },
+    data: { status: "failed", finishedAt: new Date() },
+  });
   const running = await db.run.findFirst({ where: { projectId, status: "running" } });
   if (running) return { runId: running.id, done: Promise.resolve() };
 
