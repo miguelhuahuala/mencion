@@ -6,9 +6,9 @@ import { findProjectFor, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
 import { canAnalyzeSentiment } from "@/lib/analysis";
-import { dateShort, dateTime, usd } from "@/lib/format";
+import { dateTime, usd } from "@/lib/format";
 import { ENGINE_LABEL } from "@/lib/types";
-import { Bar, DemoBanner, EngineTag, Kpi, Section, TrendLine } from "@/components/ui";
+import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
 import { runNow } from "../../actions";
 import { AutoRefresh } from "./AutoRefresh";
 import { BrandTrendChart } from "@/components/BrandTrendChart";
@@ -51,7 +51,7 @@ export default async function ProjectPage({
           <Link href="/" className="text-sm text-muted hover:text-ink">← Proyectos</Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{project.name}</h1>
           <p className="text-sm text-muted">
-            {project.domain || "sin dominio"} · {project.country} · {activePrompts.length} prompts ·{" "}
+            {project.domain || "sin dominio"} · {project.country} · {activePrompts.length} {activePrompts.length === 1 ? "prompt" : "prompts"} ·{" "}
             {d.latest ? `última corrida ${dateTime(d.latest.startedAt)}` : "sin corridas todavía"}
           </p>
         </div>
@@ -112,22 +112,30 @@ export default async function ProjectPage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Kpi label="Visibilidad" value={`${kpis.visibility}%`} hint={`de ${kpis.answers} respuestas te mencionan`} />
             <Kpi label="Share of voice" value={`${kpis.share}%`} hint="de las menciones de marcas" />
             <Kpi label="Posición media" value={kpis.avgPosition ? `#${kpis.avgPosition.toFixed(1)}` : "—"} hint="entre las marcas citadas" />
             <Kpi label="Citado como fuente" value={kpis.citedIn} hint="respuestas enlazan tu dominio" />
-            <Kpi label="Costo corrida" value={usd(kpis.cost)} hint={kpis.errors ? `${kpis.errors} consultas con error` : "DataForSEO + LLM"} />
           </div>
+          {user?.role === "admin" && (
+            <p className="-mt-2 text-xs text-muted">
+              Solo admin · costo de la última medición: <span className="font-mono">{usd(kpis.cost)}</span>
+              {kpis.errors ? ` · ${kpis.errors} consultas con error` : ""}
+            </p>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-5">
             <div className="lg:col-span-3">
-              <Section title="Tendencia de visibilidad" desc="% de respuestas que mencionan tu marca, por corrida">
-                <TrendLine points={d.trend.map((t) => ({ label: dateShort(t.date), value: t.visibility }))} />
+              <Section
+                title="Tú vs. competencia, medición a medición"
+                desc="% de respuestas que mencionan a cada marca. Pasa el cursor para ver los valores; pulsa una marca en la leyenda para ocultarla."
+              >
+                <BrandTrendChart series={d.brandTrend.map((b) => ({ ...b, points: b.points.map((p) => ({ date: p.date.toISOString(), value: p.value })) }))} />
               </Section>
             </div>
             <div className="lg:col-span-2">
-              <Section title="Por IA" desc="Visibilidad en cada motor">
+              <Section title="Por IA" desc="Visibilidad de tu marca en cada motor">
                 <ul className="space-y-3">
                   {d.byEngine.map((e) => (
                     <li key={e.engine}>
@@ -142,10 +150,6 @@ export default async function ProjectPage({
               </Section>
             </div>
           </div>
-
-          <Section title="Tú vs. competencia, medición a medición" desc="% de respuestas que mencionan a cada marca. Pasa el cursor para ver los valores; pulsa una marca en la leyenda para ocultarla.">
-            <BrandTrendChart series={d.brandTrend.map((b) => ({ ...b, points: b.points.map((p) => ({ date: p.date.toISOString(), value: p.value })) }))} />
-          </Section>
 
           <Section
             title="Tú vs. competencia"

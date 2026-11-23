@@ -16,18 +16,18 @@ const ProjectInput = z.object({
   aliases: z.string().max(500),
   country: z.string().trim().length(2),
   language: z.string().trim().min(2).max(5),
-  prompts: z.string().max(20000),
 });
 
 const fail = (path: string, msg: string): never => redirect(`${path}?error=${encodeURIComponent(msg)}`);
 
 function read(form: FormData, maxPrompts: number, errorPath: string) {
   const parsed = ProjectInput.safeParse(
-    Object.fromEntries(["name", "domain", "aliases", "country", "language", "prompts"].map((k) => [k, String(form.get(k) ?? "")])),
+    Object.fromEntries(["name", "domain", "aliases", "country", "language"].map((k) => [k, String(form.get(k) ?? "")])),
   );
   if (!parsed.success) return fail(errorPath, parsed.error.issues[0].message);
   const d = parsed.data;
-  const prompts = [...new Set(d.prompts.split("\n").map((p) => p.trim().slice(0, 500)).filter(Boolean))];
+  // Una casilla por prompt (campos repetidos "prompt"); se ignoran vacíos y duplicados
+  const prompts = [...new Set(form.getAll("prompt").map((p) => String(p).trim().slice(0, 500)).filter(Boolean))];
   if (!prompts.length) return fail(errorPath, "Agrega al menos un prompt");
   if (prompts.length > maxPrompts) return fail(errorPath, `Tu plan permite hasta ${maxPrompts} prompts por proyecto (escribiste ${prompts.length}).`);
   return {

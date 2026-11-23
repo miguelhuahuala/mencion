@@ -1,6 +1,7 @@
 import type { Project, Prompt } from "@/generated/prisma/client";
 import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, competitorsOf, ownBrand } from "@/lib/projects";
 import { CompetitorRows } from "./CompetitorRows";
+import { PromptRows } from "./PromptRows";
 import { parseJson } from "@/lib/types";
 
 const COUNTRIES: [string, string][] = [
@@ -68,10 +69,13 @@ export function ProjectForm({
           max={MAX_COMPETITORS}
         />
       </fieldset>
-      <label className="label sm:col-span-2">
-        Prompts a seguir — uno por línea, máximo {maxPrompts} (lo que tus clientes le preguntan a la IA)
-        <textarea name="prompts" rows={7} required defaultValue={prompts?.filter((p) => p.active).map((p) => p.text).join("\n")} placeholder={"¿Cuál es el mejor banco del Perú?\n¿Qué banco tiene la mejor app móvil en Perú?"} className="input mt-1 text-sm font-normal normal-case tracking-normal" />
-      </label>
+      <fieldset className="sm:col-span-2">
+        <legend className="label mb-1">Prompts a seguir (hasta {maxPrompts})</legend>
+        <p className="mb-2 text-xs text-muted">
+          Una pregunta completa por casilla, tal como tus clientes se la harían a la IA. Cada casilla se mide por separado.
+        </p>
+        <PromptRows initial={prompts?.filter((p) => p.active).map((p) => p.text) ?? []} max={maxPrompts} />
+      </fieldset>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="btn-primary">{submitLabel}</button>
         <span className="text-xs text-muted">Cada medición consulta cada prompt en ChatGPT, Claude, Gemini y Perplexity.</span>

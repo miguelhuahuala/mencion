@@ -29,6 +29,34 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
 
   if (!n) return <p className="text-sm text-muted">Aún no hay mediciones.</p>;
 
+  // Con una sola medición no hay "línea": se muestran barras para que los empates no queden encimados
+  if (n === 1) {
+    const rows = [...series]
+      .map((s) => ({ s, v: s.points[0].value }))
+      .filter((r): r is { s: BrandSeries; v: number } => r.v != null)
+      .sort((a, b) => b.v - a.v || Number(b.s.own) - Number(a.s.own));
+    return (
+      <div>
+        <p className="mb-3 text-xs text-muted">Medición del {fmtDate(series[0].points[0].date)}</p>
+        <ul className="space-y-3">
+          {rows.map(({ s, v }) => (
+            <li key={s.brand} className="grid grid-cols-[minmax(0,10rem)_1fr_3rem] items-center gap-3 text-sm">
+              <span className={`flex items-center gap-2 truncate ${s.own ? "font-semibold" : ""}`}>
+                <span aria-hidden className="inline-block size-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                {s.brand} {s.own && <span className="text-xs font-normal text-muted">(tú)</span>}
+              </span>
+              <span className="h-2.5 overflow-hidden rounded-full bg-surface" role="presentation">
+                <span className="block h-full rounded-full" style={{ width: `${Math.max(v, v > 0 ? 2 : 0)}%`, background: s.color }} />
+              </span>
+              <span className="text-right font-mono tabular-nums">{v}%</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-muted">Desde la próxima medición verás aquí una línea por marca con su evolución.</p>
+      </div>
+    );
+  }
+
   const path = (s: BrandSeries) => {
     let d = "";
     let pen = false;
