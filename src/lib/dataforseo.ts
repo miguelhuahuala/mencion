@@ -1,4 +1,5 @@
 import { domainOf, type Engine, type EngineAnswer, type Source } from "./types";
+import { locationContext } from "./locale";
 
 /**
  * Cliente mínimo de la AI Optimization API de DataForSEO.
@@ -126,6 +127,9 @@ export async function askEngine(
     model_name: MODEL[engine](),
     max_output_tokens: 1500,
   };
+  // Contexto de país e idioma: simula a un usuario en el país del proyecto (ChatGPT ya va localizado por ubicación)
+  const context = locationContext(country, opts.language);
+  if (context) task.system_message = context.slice(0, 500);
   if (engine === "claude") {
     task.web_search = true;
     if (CLAUDE_COUNTRIES.has(country)) task.web_search_country_iso_code = country;

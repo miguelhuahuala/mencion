@@ -5,10 +5,10 @@ import { DashboardPreview } from "./DashboardPreview";
 import { EngineLogo } from "./EngineLogo";
 
 const engineNotes: Record<Engine, string> = {
-  chatgpt: "La respuesta tal como la ve un usuario en chatgpt.com, con sus fuentes.",
-  claude: "Con búsqueda web activada y localizada en tu país.",
-  gemini: "El asistente de Google, con búsqueda web y citas.",
-  perplexity: "El buscador con IA más usado para investigar compras.",
+  chatgpt: "La respuesta tal como la ve un usuario de tu país en chatgpt.com, con sus fuentes.",
+  claude: "Con búsqueda web y el contexto de tu país e idioma.",
+  gemini: "El asistente de Google, con búsqueda web y el contexto de tu país.",
+  perplexity: "El buscador con IA más usado para investigar compras, localizado en tu país.",
 };
 
 const values = [
@@ -42,6 +42,7 @@ const steps = [
 
 const faqs = [
   ["¿Por qué importa aparecer en las respuestas de IA?", "Cada vez más personas preguntan a ChatGPT o Perplexity qué comprar o a quién contratar, en lugar de buscar en Google. Si la IA no te menciona, ese cliente ni siquiera llega a conocerte. Optimizar para esto se conoce como GEO (Generative Engine Optimization)."],
+  ["¿Las respuestas corresponden a mi país?", "Sí. Preguntamos como lo haría una persona en el país e idioma que elijas en tu proyecto: ChatGPT responde con esa ubicación y a Claude, Gemini y Perplexity les indicamos el país y el idioma. Así ves las marcas que la IA recomienda en tu mercado, no las de Estados Unidos o España."],
   ["¿De dónde salen los datos?", "Hacemos tus preguntas en cada IA a través de DataForSEO, con búsqueda web activada y localizada en tu país, y analizamos las respuestas reales. No estimamos ni inventamos resultados."],
   ["¿Cada cuánto se mide?", "En el plan gratis, una vez por semana. Cada medición queda guardada para que veas la evolución."],
   ["¿Tengo que instalar algo?", "No. Menciones funciona en el navegador, desde la computadora o el celular. Creas tu cuenta y listo."],
@@ -144,6 +145,7 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
               <li>✓ {l.maxProjects} proyecto: tu marca y hasta 10 competidores</li>
               <li>✓ Hasta {l.maxPrompts} preguntas (prompts)</li>
               <li>✓ ChatGPT, Claude, Gemini y Perplexity</li>
+              <li>✓ Respuestas localizadas en tu país e idioma</li>
               <li>✓ 1 medición cada {l.intervalDays} días con historial de tendencia</li>
               <li>✓ Fuentes citadas y comparación con la competencia</li>
             </ul>

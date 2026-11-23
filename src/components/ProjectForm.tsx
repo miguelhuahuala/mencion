@@ -3,11 +3,8 @@ import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, competitorsOf, ownBrand } from "
 import { CompetitorRows } from "./CompetitorRows";
 import { PromptRows } from "./PromptRows";
 import { parseJson } from "@/lib/types";
+import { COUNTRIES } from "@/lib/locale";
 
-const COUNTRIES: [string, string][] = [
-  ["PE", "Perú"], ["MX", "México"], ["CO", "Colombia"], ["CL", "Chile"], ["AR", "Argentina"],
-  ["EC", "Ecuador"], ["ES", "España"], ["US", "Estados Unidos"], ["BR", "Brasil"],
-];
 
 export function ProjectForm({
   action,
@@ -47,9 +44,9 @@ export function ProjectForm({
         <input name="aliases" defaultValue={project ? parseJson<string[]>(project.aliases, []).join(", ") : ""} placeholder="Banco de Crédito del Perú, Banco de Credito" className="input mt-1 font-normal normal-case tracking-normal" />
       </label>
       <label className="label">
-        País de búsqueda
+        País de tus clientes
         <select name="country" defaultValue={project?.country ?? "PE"} className="input mt-1 font-normal normal-case tracking-normal">
-          {COUNTRIES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+          {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
         </select>
       </label>
       <label className="label">
@@ -60,6 +57,14 @@ export function ProjectForm({
           <option value="pt">Portugués</option>
         </select>
       </label>
+      <p className="-mt-1 flex gap-2 rounded-lg bg-accent-soft px-3 py-2 text-xs text-ink sm:col-span-2">
+        <span aria-hidden>📍</span>
+        <span>
+          <strong>Respuestas localizadas:</strong> preguntamos como lo haría una persona en el país e idioma que elijas. ChatGPT
+          responde con esa ubicación, y a Claude, Gemini y Perplexity les indicamos el país y el idioma. Así ves las marcas que la
+          IA recomienda a <em>tus</em> clientes, no las de otro mercado.
+        </span>
+      </p>
       <fieldset className="sm:col-span-2">
         <legend className="label mb-2">Competidores y su color en los gráficos (hasta {MAX_COMPETITORS})</legend>
         <CompetitorRows

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { dateTime, usd } from "@/lib/format";
 import { currentUser } from "@/lib/auth";
 import { findProjectFor } from "@/lib/limits";
+import { countryName } from "@/lib/locale";
 import { parseJson, type BrandHit, type Engine, type Source } from "@/lib/types";
 import { DemoBanner, EngineTag, SentimentChip } from "@/components/ui";
 import { Markdown, plain } from "@/components/Markdown";
@@ -14,7 +15,8 @@ export const metadata = { title: "Respuesta" };
 export default async function ResponsePage({ params }: { params: Promise<{ id: string; rid: string }> }) {
   const { id, rid } = await params;
   const r = await db.response.findUnique({ where: { id: rid }, include: { prompt: true, run: { include: { project: true } } } });
-  if (!r || r.run.projectId !== id || !(await findProjectFor(id, await currentUser()))) notFound();
+  const viewer = await currentUser();
+  if (!r || r.run.projectId !== id || !(await findProjectFor(id, viewer))) notFound();
   const hits = parseJson<BrandHit[]>(r.mentions, []);
   const sources = parseJson<Source[]>(r.sources, []);
 
@@ -25,7 +27,9 @@ export default async function ResponsePage({ params }: { params: Promise<{ id: s
         <Link href={`/p/${id}`} className="text-sm text-muted hover:text-ink">← {r.run.project.name}</Link>
         <h1 className="mt-1 text-xl font-semibold tracking-tight">“{r.prompt.text}”</h1>
         <p className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted">
-          <EngineTag engine={r.engine as Engine} /> <span className="font-mono text-xs">{r.model}</span> · {dateTime(r.createdAt)} · {usd(r.costUsd)}
+          <EngineTag engine={r.engine as Engine} /> <span className="font-mono text-xs">{r.model}</span> · {dateTime(r.createdAt)}
+          {viewer?.role === "admin" && <> · <span className="font-mono text-xs">{usd(r.costUsd)}</span></>}
+          <span className="chip bg-accent-soft text-accent">📍 Como usuario en {countryName(r.run.project.country)}</span>
         </p>
       </div>
 

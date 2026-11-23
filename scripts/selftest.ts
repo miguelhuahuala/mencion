@@ -14,9 +14,11 @@ delete process.env.ANTHROPIC_API_KEY;
 execSync("npx prisma migrate deploy", { stdio: "ignore", env: process.env });
 
 const calls: string[] = [];
+const bodies: { url: string; body: Record<string, unknown> }[] = [];
 globalThis.fetch = (async (url: string, init?: RequestInit) => {
   calls.push(String(url));
   const body = JSON.parse(String(init?.body ?? "[{}]"))[0] ?? {};
+  bodies.push({ url: String(url), body });
   let result: Record<string, unknown>;
   if (String(url).includes("llm_scraper")) {
     result = {
@@ -61,6 +63,12 @@ async function main() {
   const claude = d.responses.find((r) => r.engine === "claude")!;
   assert(claude.sources[0]?.domain === "rival1.example", "Claude: fuente extraída de annotations");
   assert(Math.abs((d.latest?.costUsd ?? 0) - 0.012) < 1e-9, "costo sumado = 6 × $0.002");
+  // Localización: ChatGPT por ubicación (Perú = 2604); Claude, Gemini y Perplexity con mensaje de sistema de país
+  const byEngine = (k: string) => bodies.filter((b) => b.url.includes(`/${k}/`)).map((b) => b.body);
+  assert(byEngine("chat_gpt").every((b) => b.location_code === 2604 && !b.system_message), "ChatGPT: ubicación Perú (2604), sin mensaje de sistema");
+  for (const k of ["claude", "gemini", "perplexity"]) {
+    assert(byEngine(k).every((b) => typeof b.system_message === "string" && /Perú/.test(b.system_message as string) && (b.system_message as string).length <= 500), `${k}: mensaje de sistema con Perú (≤ 500 caracteres)`);
+  }
   await db.$disconnect();
   rmSync(DB, { force: true });
 }
