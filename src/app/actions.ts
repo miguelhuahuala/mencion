@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { startRun } from "@/lib/runner";
-import { parseCompetitorLines } from "@/lib/projects";
+import { PALETTE, cleanDomain, competitorsFromForm, isHexColor } from "@/lib/projects";
 import { requireUser } from "@/lib/auth";
 import { findProjectFor, limitsFor, runAvailability } from "@/lib/limits";
 import { dateTime } from "@/lib/format";
@@ -14,7 +14,6 @@ const ProjectInput = z.object({
   name: z.string().trim().min(1, "Falta el nombre de la marca").max(80),
   domain: z.string().trim().max(120),
   aliases: z.string().max(500),
-  competitors: z.string().max(5000),
   country: z.string().trim().length(2),
   language: z.string().trim().min(2).max(5),
   prompts: z.string().max(20000),
@@ -24,7 +23,7 @@ const fail = (path: string, msg: string): never => redirect(`${path}?error=${enc
 
 function read(form: FormData, maxPrompts: number, errorPath: string) {
   const parsed = ProjectInput.safeParse(
-    Object.fromEntries(["name", "domain", "aliases", "competitors", "country", "language", "prompts"].map((k) => [k, String(form.get(k) ?? "")])),
+    Object.fromEntries(["name", "domain", "aliases", "country", "language", "prompts"].map((k) => [k, String(form.get(k) ?? "")])),
   );
   if (!parsed.success) return fail(errorPath, parsed.error.issues[0].message);
   const d = parsed.data;
@@ -33,9 +32,10 @@ function read(form: FormData, maxPrompts: number, errorPath: string) {
   if (prompts.length > maxPrompts) return fail(errorPath, `Tu plan permite hasta ${maxPrompts} prompts por proyecto (escribiste ${prompts.length}).`);
   return {
     name: d.name,
-    domain: d.domain.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "").toLowerCase(),
+    domain: cleanDomain(d.domain),
     aliases: JSON.stringify(d.aliases.split(",").map((a) => a.trim()).filter(Boolean)),
-    competitors: JSON.stringify(parseCompetitorLines(d.competitors).slice(0, 10)),
+    color: isHexColor(form.get("color")) ? String(form.get("color")).toLowerCase() : PALETTE[0],
+    competitors: JSON.stringify(competitorsFromForm(form)),
     country: d.country.toUpperCase(),
     language: d.language.toLowerCase(),
     prompts,

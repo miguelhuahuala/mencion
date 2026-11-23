@@ -1,5 +1,6 @@
 import type { Project, Prompt } from "@/generated/prisma/client";
-import { competitorLines, competitorsOf } from "@/lib/projects";
+import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, competitorsOf, ownBrand } from "@/lib/projects";
+import { CompetitorRows } from "./CompetitorRows";
 import { parseJson } from "@/lib/types";
 
 const COUNTRIES: [string, string][] = [
@@ -23,10 +24,19 @@ export function ProjectForm({
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
       {project ? <input type="hidden" name="id" value={project.id} /> : null}
-      <label className="label">
-        Marca
-        <input name="name" required maxLength={80} defaultValue={project?.name} placeholder="BCP" className="input mt-1 font-normal normal-case tracking-normal" />
-      </label>
+      <div className="label">
+        Marca y su color en los gráficos
+        <div className="mt-1 flex gap-2">
+          <input
+            type="color"
+            name="color"
+            defaultValue={project ? ownBrand(project).color : PALETTE[0]}
+            aria-label="Color de tu marca"
+            className="h-10 w-10 shrink-0 cursor-pointer rounded-lg border border-line bg-white p-1"
+          />
+          <input name="name" required maxLength={80} defaultValue={project?.name} placeholder="BCP" aria-label="Marca" className="input font-normal normal-case tracking-normal" />
+        </div>
+      </div>
       <label className="label">
         Dominio
         <input name="domain" maxLength={120} defaultValue={project?.domain} placeholder="viabcp.com" className="input mt-1 font-normal normal-case tracking-normal" />
@@ -49,10 +59,15 @@ export function ProjectForm({
           <option value="pt">Portugués</option>
         </select>
       </label>
-      <label className="label sm:col-span-2">
-        Competidores — uno por línea: <span className="font-mono normal-case">Marca | dominio.com | alias</span>
-        <textarea name="competitors" rows={4} defaultValue={project ? competitorLines(competitorsOf(project)) : ""} placeholder={"Interbank | interbank.pe\nBBVA | bbva.pe | BBVA Perú"} className="input mt-1 font-mono text-xs font-normal normal-case tracking-normal" />
-      </label>
+      <fieldset className="sm:col-span-2">
+        <legend className="label mb-2">Competidores y su color en los gráficos (hasta {MAX_COMPETITORS})</legend>
+        <CompetitorRows
+          initial={project ? competitorsOf(project).map((c) => ({ name: c.name, domain: c.domain, aliases: c.aliases, color: c.color! })) : []}
+          palette={PALETTE}
+          otherColor={OTHER_COLOR}
+          max={MAX_COMPETITORS}
+        />
+      </fieldset>
       <label className="label sm:col-span-2">
         Prompts a seguir — uno por línea, máximo {maxPrompts} (lo que tus clientes le preguntan a la IA)
         <textarea name="prompts" rows={7} required defaultValue={prompts?.filter((p) => p.active).map((p) => p.text).join("\n")} placeholder={"¿Cuál es el mejor banco del Perú?\n¿Qué banco tiene la mejor app móvil en Perú?"} className="input mt-1 text-sm font-normal normal-case tracking-normal" />

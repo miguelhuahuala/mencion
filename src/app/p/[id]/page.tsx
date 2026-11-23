@@ -11,6 +11,7 @@ import { ENGINE_LABEL } from "@/lib/types";
 import { Bar, DemoBanner, EngineTag, Kpi, Section, TrendLine } from "@/components/ui";
 import { runNow } from "../../actions";
 import { AutoRefresh } from "./AutoRefresh";
+import { BrandTrendChart } from "@/components/BrandTrendChart";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +125,10 @@ export default async function ProjectPage({
             </div>
           </div>
 
+          <Section title="Tú vs. competencia, medición a medición" desc="% de respuestas que mencionan a cada marca. Pasa el cursor para ver los valores; pulsa una marca en la leyenda para ocultarla.">
+            <BrandTrendChart series={d.brandTrend.map((b) => ({ ...b, points: b.points.map((p) => ({ date: p.date.toISOString(), value: p.value })) }))} />
+          </Section>
+
           <Section
             title="Tú vs. competencia"
             desc="Menciones en la última corrida"
@@ -145,11 +150,11 @@ export default async function ProjectPage({
                   {d.shareOfVoice.map((s) => (
                     <tr key={s.brand} className={s.own ? "font-semibold" : ""}>
                       <td className="py-2.5">
-                        {s.brand} {s.own && <span className="chip ml-1 bg-accent-soft text-accent">tú</span>}
+                        <span aria-hidden className="mr-2 inline-block size-2.5 rounded-full align-middle" style={{ background: s.color }} />{s.brand} {s.own && <span className="chip ml-1 bg-accent-soft text-accent">tú</span>}
                       </td>
                       <td className="py-2.5 pr-4">
                         <div className="flex items-center gap-2">
-                          <Bar value={s.visibility} own={s.own} />
+                          <Bar value={s.visibility} own={s.own} color={s.color} />
                           <span className="w-10 text-right font-mono text-xs tabular-nums">{s.visibility}%</span>
                         </div>
                       </td>

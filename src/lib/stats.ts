@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { ENGINES, parseJson, type BrandHit, type Engine, type Source } from "./types";
+import { OTHER_COLOR, competitorsOf, ownBrand } from "./projects";
 
 export type ParsedResponse = {
   id: string;
@@ -37,6 +38,10 @@ export async function projectDashboard(projectId: string) {
     hits: parseJson<BrandHit[]>(r.mentions, []),
   }));
   const ok = responses.filter((r) => !r.error);
+
+  // Colores elegidos por el usuario para cada marca (si una marca se renombró, cae a gris)
+  const brands = [{ ...ownBrand(project), own: true }, ...competitorsOf(project).map((c) => ({ ...c, own: false }))];
+  const colorOf = (name: string) => brands.find((b) => b.name === name)?.color ?? OTHER_COLOR;
   const ownHit = (r: ParsedResponse) => r.hits.find((h) => h.own);
 
   // Visibilidad: % de respuestas donde aparece la marca propia
@@ -54,6 +59,7 @@ export async function projectDashboard(projectId: string) {
     return {
       brand,
       own,
+      color: colorOf(brand),
       mentions: hitsFor.length,
       visibility: pct(hitsFor.length, ok.length),
       avgPosition: positions.length ? positions.reduce((a, b) => a + b, 0) / positions.length : null,
@@ -84,6 +90,21 @@ export async function projectDashboard(projectId: string) {
     return { runId: run.id, date: run.startedAt, visibility: pct(vis, set.length), costUsd: run.costUsd };
   });
 
+  // Evolución por marca: % de respuestas que mencionan cada marca, en cada medición
+  const parsedTrend = trendRows.map((t) => ({ runId: t.runId, hits: parseJson<BrandHit[]>(t.mentions, []) }));
+  const brandTrend = brands.map((b) => ({
+    brand: b.name,
+    own: b.own,
+    color: b.color ?? OTHER_COLOR,
+    points: doneRuns.map((run) => {
+      const set = parsedTrend.filter((t) => t.runId === run.id);
+      const tracked = set.filter((t) => t.hits.some((h) => h.brand === b.name));
+      // null = esa marca aún no se seguía en esa medición
+      const value = tracked.length ? pct(tracked.filter((t) => t.hits.find((h) => h.brand === b.name)?.mentioned).length, set.length) : null;
+      return { date: run.startedAt, value };
+    }),
+  }));
+
   const own = shareOfVoice.find((s) => s.own);
   return {
     project,
@@ -104,6 +125,7 @@ export async function projectDashboard(projectId: string) {
     shareOfVoice,
     topDomains,
     trend,
+    brandTrend,
   };
 }
 

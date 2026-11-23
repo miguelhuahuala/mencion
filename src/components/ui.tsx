@@ -27,10 +27,13 @@ export function Section({ title, desc, children, aside }: { title: string; desc?
   );
 }
 
-export function Bar({ value, own }: { value: number; own?: boolean }) {
+export function Bar({ value, own, color }: { value: number; own?: boolean; color?: string }) {
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-surface" role="presentation">
-      <div className={`h-full rounded-full ${own ? "bg-accent" : "bg-slate-300"}`} style={{ width: `${Math.max(value, value > 0 ? 2 : 0)}%` }} />
+      <div
+        className={`h-full rounded-full ${color ? "" : own ? "bg-accent" : "bg-slate-300"}`}
+        style={{ width: `${Math.max(value, value > 0 ? 2 : 0)}%`, background: color }}
+      />
     </div>
   );
 }

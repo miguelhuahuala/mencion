@@ -8,7 +8,7 @@ export const ENGINE_LABEL: Record<Engine, string> = {
   perplexity: "Perplexity",
 };
 
-export type Competitor = { name: string; domain: string; aliases: string[] };
+export type Competitor = { name: string; domain: string; aliases: string[]; color?: string };
 
 export type Source = { title: string; url: string; domain: string };
 
