@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <article className="mx-auto max-w-2xl space-y-4 text-sm leading-relaxed">
       <h1 className="text-2xl font-semibold tracking-tight">Política de privacidad</h1>
-      <p className="text-muted">Última actualización: noviembre de 2026.</p>
+      <p className="text-muted">Última actualización: 23 de noviembre de 2026.</p>
 
       <h2 className="pt-2 font-semibold">Qué datos tratamos</h2>
       <ul className="list-disc space-y-1 pl-5">
@@ -36,7 +36,11 @@ export default function PrivacyPage() {
       </p>
 
       <h2 className="pt-2 font-semibold">Cookies</h2>
-      <p>Usamos una única cookie técnica para mantener tu sesión iniciada. No usamos cookies publicitarias.</p>
+      <p>
+        Usamos una cookie técnica para mantener tu sesión iniciada y Google Analytics para medir de forma agregada cómo se usa el
+        sitio (páginas visitadas, país, tipo de dispositivo), con la IP anonimizada. No usamos cookies publicitarias ni vendemos
+        esos datos. Puedes bloquear Google Analytics desde la configuración de tu navegador.
+      </p>
     </article>
   );
 }

@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { currentUser } from "@/lib/auth";
 import { signOut } from "./auth-actions";
+import { Analytics } from "@/components/Analytics";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", display: "swap" });
@@ -13,6 +14,21 @@ export const metadata: Metadata = {
   title: { default: "Menciones — ¿Las IAs recomiendan tu marca?", template: "%s · Menciones" },
   description:
     "Mide gratis cuántas veces ChatGPT, Claude, Gemini y Perplexity mencionan tu marca frente a tu competencia, en qué posición y con qué fuentes.",
+  applicationName: "Menciones",
+  openGraph: {
+    type: "website",
+    siteName: "Menciones",
+    locale: "es_PE",
+    url: "/",
+    title: "Menciones — ¿Las IAs recomiendan tu marca?",
+    description: "Mide gratis tu visibilidad en ChatGPT, Claude, Gemini y Perplexity frente a tu competencia.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Menciones — ¿Las IAs recomiendan tu marca?",
+    description: "Mide gratis tu visibilidad en ChatGPT, Claude, Gemini y Perplexity frente a tu competencia.",
+  },
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
   // Solo se indexa en producción (ALLOW_INDEXING=true)
   robots: process.env.ALLOW_INDEXING === "true" ? undefined : { index: false, follow: false },
 };
@@ -52,6 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <span>Datos de IA vía DataForSEO AI Optimization API</span>
           <Link href="/privacidad" className="hover:text-ink">Política de privacidad</Link>
         </footer>
+        <Analytics />
       </body>
     </html>
   );

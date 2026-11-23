@@ -3,16 +3,17 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { endSession, hashPassword, newToken, requireUser, sha256, startSession, verifyPassword } from "@/lib/auth";
-import { canSendEmail, sendEmail, siteUrl } from "@/lib/email";
+import { endSession, hashPassword, newToken, requireUser, startSession, verifyPassword } from "@/lib/auth";
+import { canSendEmail, sendEmail } from "@/lib/email";
+import { MAX_ATTEMPTS, attemptsMessage, codeEmail, codeMatches, hashCode, newCode, spaced } from "@/lib/codes";
 
 const go = (path: string, params: Record<string, string>): never =>
   redirect(`${path}?${new URLSearchParams(params).toString()}`);
 
 const Password = z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(200);
-const RESET_MINUTES = 60;
+const RESET_MINUTES = 30;
 
-/** Paso 1: pedir enlace de recuperación. Nunca revela si el correo existe. */
+/** Paso 1: pedir un código de recuperación. Nunca revela si el correo existe. */
 export async function requestReset(form: FormData) {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   if (!z.string().email().safeParse(email).success) go("/recuperar", { error: "Escribe un correo válido", email });
@@ -21,50 +22,70 @@ export async function requestReset(form: FormData) {
   const user = await db.user.findUnique({ where: { email } });
   if (user) {
     // Máximo un correo cada 2 minutos por cuenta
-    const recent = await db.passwordReset.findFirst({ where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 2 * 60_000) } } });
+    const recent = await db.passwordReset.findFirst({
+      where: { userId: user.id, usedAt: null, createdAt: { gt: new Date(Date.now() - 2 * 60_000) } },
+    });
     if (!recent) {
-      const token = newToken();
+      const code = newCode();
+      // Un código nuevo invalida los anteriores
+      await db.passwordReset.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } });
       const reset = await db.passwordReset.create({
-        data: { id: sha256(token), userId: user.id, expiresAt: new Date(Date.now() + RESET_MINUTES * 60_000) },
+        data: {
+          id: newToken(),
+          codeHash: hashCode("reset", user.id, code),
+          userId: user.id,
+          expiresAt: new Date(Date.now() + RESET_MINUTES * 60_000),
+        },
       });
-      const link = `${siteUrl()}/restablecer?token=${token}`;
       try {
         await sendEmail({
           to: user.email,
-          subject: "Restablece tu contraseña de Menciones",
-          text: `Hola,\n\nPara crear una nueva contraseña entra a este enlace (vence en ${RESET_MINUTES} minutos):\n${link}\n\nSi no lo pediste, ignora este correo; tu contraseña no cambiará.\n\nMenciones`,
-          html: `<p>Hola,</p><p>Para crear una nueva contraseña pulsa el botón (el enlace vence en ${RESET_MINUTES} minutos):</p><p><a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Crear nueva contraseña</a></p><p style="color:#5d6679;font-size:13px">Si no lo pediste, ignora este correo; tu contraseña no cambiará.</p><p>Menciones</p>`,
+          subject: `${spaced(code)} es tu código para recuperar tu contraseña de Menciones`,
+          ...codeEmail({
+            intro: "Tu código para crear una nueva contraseña en Menciones es:",
+            code,
+            minutes: RESET_MINUTES,
+            outro: "Si no lo pediste, ignora este correo; tu contraseña no cambiará.",
+          }),
         });
       } catch (e) {
-        console.error("[mencion] no se pudo enviar el correo de recuperación:", e);
-        // Si el correo no salió, se borra el enlace para permitir reintentar de inmediato
+        console.error("[menciones] no se pudo enviar el correo de recuperación:", e);
+        // Si el correo no salió, se borra el código para permitir reintentar de inmediato
         await db.passwordReset.delete({ where: { id: reset.id } }).catch(() => {});
-        go("/recuperar", { error: "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos." });
+        go("/recuperar", { error: "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos.", email });
       }
     }
   }
-  go("/recuperar", { sent: "1" });
+  go("/restablecer", { email, enviado: "1" });
 }
 
-/** Paso 2: definir la nueva contraseña con el token del correo. */
+/** Paso 2: código del correo + nueva contraseña. */
 export async function resetPassword(form: FormData) {
-  const token = String(form.get("token") ?? "");
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const rawCode = String(form.get("code") ?? "");
   const parsed = Password.safeParse(String(form.get("password") ?? ""));
-  if (!parsed.success) go("/restablecer", { token, error: parsed.error.issues[0].message });
+  if (!parsed.success) go("/restablecer", { email, error: parsed.error.issues[0].message });
 
-  const reset = token ? await db.passwordReset.findUnique({ where: { id: sha256(token) } }) : null;
-  if (!reset || reset.usedAt || reset.expiresAt < new Date()) {
-    go("/recuperar", { error: "El enlace venció o ya se usó. Pide uno nuevo." });
+  const user = email ? await db.user.findUnique({ where: { email } }) : null;
+  const reset = user
+    ? await db.passwordReset.findFirst({ where: { userId: user.id, usedAt: null, codeHash: { not: "" } }, orderBy: { createdAt: "desc" } })
+    : null;
+  if (!user || !reset || reset.expiresAt < new Date()) go("/restablecer", { email, error: "El código venció o no es válido. Pide uno nuevo." });
+  if (reset!.attempts >= MAX_ATTEMPTS) go("/restablecer", { email, error: "Demasiados intentos. Pide un código nuevo." });
+  if (!codeMatches(reset!.codeHash, "reset", user!.id, rawCode)) {
+    await db.passwordReset.update({ where: { id: reset!.id }, data: { attempts: { increment: 1 } } });
+    go("/restablecer", { email, error: attemptsMessage(reset!.attempts) });
   }
+
   await db.$transaction([
-    db.user.update({ where: { id: reset!.userId }, data: { passwordHash: await hashPassword(parsed.data!) } }),
+    db.user.update({ where: { id: user!.id }, data: { passwordHash: await hashPassword(parsed.data!) } }),
     db.passwordReset.update({ where: { id: reset!.id }, data: { usedAt: new Date() } }),
-    // Usar el enlace del correo también demuestra que el correo es suyo
-    db.user.updateMany({ where: { id: reset!.userId, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } }),
+    // Recibir el código en su correo también demuestra que el correo es suyo
+    db.user.updateMany({ where: { id: user!.id, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } }),
     // Cierra todas las sesiones abiertas con la contraseña anterior
-    db.session.deleteMany({ where: { userId: reset!.userId } }),
+    db.session.deleteMany({ where: { userId: user!.id } }),
   ]);
-  await startSession(reset!.userId);
+  await startSession(user!.id);
   go("/cuenta", { ok: "Listo, tu contraseña se actualizó." });
 }
 
