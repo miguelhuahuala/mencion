@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthCard } from "@/components/AuthCard";
+import { SubmitButton } from "@/components/SubmitButton";
 import { requestReset, resetPassword } from "../account-actions";
 
 export const metadata = { title: "Nueva contraseña", robots: { index: false } };
@@ -41,13 +42,13 @@ export default async function ResetPage({ searchParams }: { searchParams: Promis
             Nueva contraseña (mínimo 8 caracteres)
             <input name="password" type="password" required minLength={8} autoComplete="new-password" className={field} />
           </label>
-          <button className="btn-primary w-full">Guardar contraseña</button>
+          <SubmitButton pendingText="Guardando…">Guardar contraseña</SubmitButton>
         </form>
         <p className="text-muted">Revisa también la carpeta de spam. El código vence en 30 minutos.</p>
         {email && (
           <form action={requestReset} className="border-t border-line pt-4">
             <input type="hidden" name="email" value={email} />
-            <button className="btn-ghost w-full">Enviar código nuevo</button>
+            <SubmitButton pendingText="Enviando…" className="btn-ghost w-full">Enviar código nuevo</SubmitButton>
           </form>
         )}
       </div>

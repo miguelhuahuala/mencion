@@ -6,8 +6,11 @@ import { db } from "@/lib/db";
 import { endSession, hashPassword, isAdminEmail, startSession, verifyPassword } from "@/lib/auth";
 import { activate, checkVerificationCode, sendVerificationEmail, verificationRequired } from "@/lib/verification";
 
-const back = (path: string, error: string, email?: string) =>
-  redirect(`${path}?error=${encodeURIComponent(error)}${email ? `&email=${encodeURIComponent(email)}` : ""}`);
+const back = (path: string, error: string, email?: string, form?: FormData) => {
+  // n = número de intento fallido; permite que la página muestre que el error es nuevo
+  const n = Math.min(99, Number(form?.get("n") ?? 0) + 1);
+  return redirect(`${path}?error=${encodeURIComponent(error)}${email ? `&email=${encodeURIComponent(email)}` : ""}&n=${n}`);
+};
 
 const pending = (email: string, extra: Record<string, string> = {}) =>
   redirect(`/verificar?${new URLSearchParams({ email, ...extra }).toString()}`);
@@ -25,10 +28,10 @@ export async function signUp(form: FormData) {
     consent: form.get("consent") ?? "",
   });
   const email = String(form.get("email") ?? "");
-  if (!parsed.success) return back("/registro", parsed.error.issues[0].message, email);
+  if (!parsed.success) return back("/registro", parsed.error.issues[0].message, email, form);
 
   const exists = await db.user.findUnique({ where: { email: parsed.data.email } });
-  if (exists) return back("/registro", "Ya existe una cuenta con ese correo. Ingresa.", email);
+  if (exists) return back("/registro", "Ya existe una cuenta con ese correo. Ingresa.", email, form);
 
   const mustVerify = verificationRequired();
   const user = await db.user.create({
@@ -62,7 +65,7 @@ export async function signIn(form: FormData) {
   const user = email ? await db.user.findUnique({ where: { email } }) : null;
   // Mismo mensaje en ambos casos para no revelar qué correos están registrados
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return back("/ingresar", "Correo o contraseña incorrectos", email);
+    return back("/ingresar", "Correo o contraseña incorrectos", email, form);
   }
   if (!user.emailVerifiedAt) {
     // Si no tiene un código vigente (p. ej. cuentas creadas cuando se usaba enlace), se le envía uno ahora

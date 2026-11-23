@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthCard } from "@/components/AuthCard";
+import { SubmitButton } from "@/components/SubmitButton";
 import { confirmCode, resendVerification } from "../auth-actions";
 
 export const metadata = { title: "Confirma tu correo", robots: { index: false } };
@@ -38,7 +39,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
               className="input mt-1 text-center font-mono text-2xl tracking-[0.3em] font-normal normal-case"
             />
           </label>
-          <button className="btn-primary w-full">Confirmar</button>
+          <SubmitButton pendingText="Confirmando…">Confirmar</SubmitButton>
         </form>
         <p className="text-muted">Revisa también la carpeta de spam. El código vence en 30 minutos.</p>
         <form action={resendVerification} className="space-y-3 border-t border-line pt-4">
@@ -46,7 +47,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
             ¿No te llegó? Enviar un código nuevo a
             <input name="email" type="email" required defaultValue={email} autoComplete="email" className="input mt-1 font-normal normal-case tracking-normal" />
           </label>
-          <button className="btn-ghost w-full">Enviar código nuevo</button>
+          <SubmitButton pendingText="Enviando…" className="btn-ghost w-full">Enviar código nuevo</SubmitButton>
         </form>
       </div>
       <p className="mt-4 text-center text-sm text-muted">

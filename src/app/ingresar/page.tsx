@@ -3,26 +3,34 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { AuthCard } from "@/components/AuthCard";
 import { signIn } from "../auth-actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const metadata = { title: "Ingresar" };
 export const dynamic = "force-dynamic";
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string }> }) {
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string; n?: string }> }) {
   if (await currentUser()) redirect("/");
-  const { error, email } = await searchParams;
+  const { error, email, n } = await searchParams;
+  const attempt = Number(n) || 0;
   return (
-    <AuthCard title="Ingresar" error={error}>
+    <AuthCard title="Ingresar" error={error} attempt={attempt}>
       <form action={signIn} className="space-y-4">
+        <input type="hidden" name="n" value={attempt} />
         <label className="label">
           Correo
           <input name="email" type="email" required autoComplete="email" defaultValue={email} className="input mt-1 font-normal normal-case tracking-normal" />
         </label>
         <label className="label">
           Contraseña
-          <input name="password" type="password" required autoComplete="current-password" className="input mt-1 font-normal normal-case tracking-normal" />
+          <input key={attempt} name="password" type="password" required autoComplete="current-password" autoFocus={attempt > 0} className="input mt-1 font-normal normal-case tracking-normal" />
         </label>
-        <button className="btn-primary w-full">Ingresar</button>
+        <SubmitButton pendingText="Ingresando…">Ingresar</SubmitButton>
       </form>
+      {attempt >= 2 && (
+        <p className="mt-3 rounded-lg bg-surface px-3 py-2 text-center text-sm">
+          ¿No recuerdas tu contraseña? <Link href={`/recuperar${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-semibold text-accent underline">Te enviamos un código para crear una nueva</Link>
+        </p>
+      )}
       <p className="mt-3 text-center text-sm">
         <Link href="/recuperar" className="text-muted underline hover:text-ink">¿Olvidaste tu contraseña?</Link>
       </p>

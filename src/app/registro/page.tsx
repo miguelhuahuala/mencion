@@ -4,21 +4,25 @@ import { currentUser } from "@/lib/auth";
 import { freeLimits } from "@/lib/limits";
 import { AuthCard } from "@/components/AuthCard";
 import { signUp } from "../auth-actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const metadata = { title: "Crear cuenta" };
 export const dynamic = "force-dynamic";
 
-export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string }> }) {
+export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string; n?: string }> }) {
   if (await currentUser()) redirect("/");
-  const { error, email } = await searchParams;
+  const { error, email, n } = await searchParams;
+  const attempt = Number(n) || 0;
   const l = freeLimits();
   return (
     <AuthCard
       title="Crea tu cuenta gratis"
       subtitle={`Plan gratis: ${l.maxProjects} proyecto, ${l.maxPrompts} prompts y una medición cada ${l.intervalDays} días en 4 IAs.`}
       error={error}
+      attempt={attempt}
     >
       <form action={signUp} className="space-y-4">
+        <input type="hidden" name="n" value={attempt} />
         <label className="label">
           Correo
           <input name="email" type="email" required autoComplete="email" defaultValue={email} className="input mt-1 font-normal normal-case tracking-normal" />
@@ -34,7 +38,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
             tratamiento de mis datos para usar el servicio.
           </span>
         </label>
-        <button className="btn-primary w-full">Crear cuenta</button>
+        <SubmitButton pendingText="Creando tu cuenta…">Crear cuenta</SubmitButton>
       </form>
       <p className="mt-4 text-center text-sm text-muted">
         ¿Ya tienes cuenta? <Link href="/ingresar" className="text-accent underline">Ingresa</Link>
