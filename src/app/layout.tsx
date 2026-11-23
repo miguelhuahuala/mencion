@@ -5,6 +5,7 @@ import "./globals.css";
 import { currentUser } from "@/lib/auth";
 import { signOut } from "./auth-actions";
 import { Analytics } from "@/components/Analytics";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", display: "swap" });
@@ -64,10 +65,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-1 px-4 pb-10 text-xs text-muted">
+        <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-1 px-4 pb-24 text-xs text-muted">
           <span>Datos de IA vía DataForSEO AI Optimization API</span>
           <Link href="/privacidad" className="hover:text-ink">Política de privacidad</Link>
         </footer>
+        <WhatsAppButton />
         <Analytics />
       </body>
     </html>
