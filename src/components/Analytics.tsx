@@ -5,7 +5,8 @@ import Script from "next/script";
  * por eso puede ir en el código; NEXT_PUBLIC_GA_ID permite cambiarlo sin tocar código.
  * Solo se carga en producción.
  */
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+// Propiedad GA4 "Menciones" → flujo web menciones.org
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-NK4GJL8M5C";
 
 export function Analytics() {
   if (!GA_ID || process.env.NODE_ENV !== "production") return null;
