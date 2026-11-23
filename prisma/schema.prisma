@@ -37,7 +37,9 @@ model EmailVerification {
 }
 
 model PasswordReset {
-  id        String    @id // sha256 del token enviado por correo
+  id        String    @id // identificador aleatorio
+  codeHash  String    @default("") // sha256(reset:userId:código de 6 dígitos)
+  attempts  Int       @default(0)  // intentos fallidos (máx. 5)
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
