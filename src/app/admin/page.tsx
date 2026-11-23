@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { monthlyBudget } from "@/lib/limits";
 import { dateTime, usd } from "@/lib/format";
-import { deleteUserAsAdmin } from "./actions";
+import { deleteUserAsAdmin, testDataForSeo } from "./actions";
 
 export const metadata = { title: "Administración", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -24,11 +24,16 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Administración</h1>
-        <p className="text-sm text-muted">
-          {users.length} usuarios · {verified} con correo confirmado · gasto del mes {usd(budget.spent)} de {budget.cap ? usd(budget.cap) : "sin tope"}
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Administración</h1>
+          <p className="text-sm text-muted">
+            {users.length} usuarios · {verified} con correo confirmado · gasto del mes {usd(budget.spent)} de {budget.cap ? usd(budget.cap) : "sin tope"}
+          </p>
+        </div>
+        <form action={testDataForSeo}>
+          <button className="btn-ghost" title="Usa una consulta gratuita de DataForSEO; no consume saldo">Probar conexión con DataForSEO</button>
+        </form>
       </div>
       {error && <div role="alert" className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
       {ok && <div role="status" className="rounded-xl border border-good/30 bg-good-soft px-4 py-3 text-sm text-good">{ok}</div>}
