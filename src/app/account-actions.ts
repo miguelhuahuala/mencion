@@ -59,6 +59,8 @@ export async function resetPassword(form: FormData) {
   await db.$transaction([
     db.user.update({ where: { id: reset!.userId }, data: { passwordHash: await hashPassword(parsed.data!) } }),
     db.passwordReset.update({ where: { id: reset!.id }, data: { usedAt: new Date() } }),
+    // Usar el enlace del correo también demuestra que el correo es suyo
+    db.user.updateMany({ where: { id: reset!.userId, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } }),
     // Cierra todas las sesiones abiertas con la contraseña anterior
     db.session.deleteMany({ where: { userId: reset!.userId } }),
   ]);

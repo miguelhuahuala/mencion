@@ -11,9 +11,9 @@ import { parseJson, type BrandHit } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; cuenta?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; cuenta?: string; bienvenida?: string }> }) {
   const user = await currentUser();
-  const { error, cuenta } = await searchParams;
+  const { error, cuenta, bienvenida } = await searchParams;
   if (!user) return <Landing deleted={cuenta === "eliminada"} />;
   const admin = isAdmin(user);
   const limits = limitsFor(user);
@@ -59,6 +59,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm">
           <strong>Falta conectar DataForSEO.</strong> Agrega <code className="font-mono">DATAFORSEO_LOGIN</code> y{" "}
           <code className="font-mono">DATAFORSEO_PASSWORD</code> en <code className="font-mono">.env</code>.
+        </div>
+      )}
+      {bienvenida && (
+        <div role="status" className="rounded-xl border border-good/30 bg-good-soft px-4 py-3 text-sm text-good">
+          ¡Listo! Tu correo está confirmado. Crea tu primer proyecto para empezar a medir.
         </div>
       )}
       {error && <div role="alert" className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}

@@ -4,9 +4,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { endSession, hashPassword, isAdminEmail, startSession, verifyPassword } from "@/lib/auth";
+import { activate, sendVerificationEmail, verificationRequired } from "@/lib/verification";
 
 const back = (path: string, error: string, email?: string) =>
   redirect(`${path}?error=${encodeURIComponent(error)}${email ? `&email=${encodeURIComponent(email)}` : ""}`);
+
+const pending = (email: string, extra: Record<string, string> = {}) =>
+  redirect(`/verificar?${new URLSearchParams({ email, ...extra }).toString()}`);
 
 const Signup = z.object({
   email: z.string().trim().toLowerCase().email("Correo no válido").max(200),
@@ -26,17 +30,28 @@ export async function signUp(form: FormData) {
   const exists = await db.user.findUnique({ where: { email: parsed.data.email } });
   if (exists) return back("/registro", "Ya existe una cuenta con ese correo. Ingresa.", email);
 
-  const admin = isAdminEmail(parsed.data.email);
+  const mustVerify = verificationRequired();
   const user = await db.user.create({
     data: {
       email: parsed.data.email,
       passwordHash: await hashPassword(parsed.data.password),
-      role: admin ? "admin" : "user",
+      role: "user", // el rol de admin se asigna al confirmar el correo
       consentAt: new Date(),
+      emailVerifiedAt: mustVerify ? null : new Date(),
     },
   });
-  // El primer administrador hereda los proyectos creados antes de que existieran las cuentas.
-  if (admin) await db.project.updateMany({ where: { userId: null, isDemo: false }, data: { userId: user.id } });
+
+  if (mustVerify) {
+    try {
+      await sendVerificationEmail(user);
+    } catch (e) {
+      console.error("[menciones] no se pudo enviar la verificación:", e);
+      return pending(user.email, { error: "Creamos tu cuenta, pero no pudimos enviar el correo. Pulsa “Reenviar”." });
+    }
+    return pending(user.email, { enviado: "1" });
+  }
+
+  await activate(user.id, user.email);
   await startSession(user.id);
   redirect("/");
 }
@@ -49,11 +64,30 @@ export async function signIn(form: FormData) {
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return back("/ingresar", "Correo o contraseña incorrectos", email);
   }
+  if (!user.emailVerifiedAt) {
+    return pending(user.email, { error: "Antes de ingresar confirma tu correo con el enlace que te enviamos." });
+  }
   if (isAdminEmail(user.email) && user.role !== "admin") {
     await db.user.update({ where: { id: user.id }, data: { role: "admin" } });
   }
   await startSession(user.id);
   redirect("/");
+}
+
+/** Reenviar el correo de confirmación. No revela si el correo existe. */
+export async function resendVerification(form: FormData) {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const user = email ? await db.user.findUnique({ where: { email } }) : null;
+  if (user && !user.emailVerifiedAt) {
+    try {
+      const sent = await sendVerificationEmail(user);
+      if (!sent) return pending(email, { error: "Ya te enviamos un correo hace un momento. Espera 2 minutos para pedir otro." });
+    } catch (e) {
+      console.error("[menciones] no se pudo reenviar la verificación:", e);
+      return pending(email, { error: "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos." });
+    }
+  }
+  return pending(email, { enviado: "1" });
 }
 
 export async function signOut() {

@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <span className="hidden sm:inline">{user.email}</span>
                   <span className="sm:hidden">Mi cuenta</span>
                 </Link>
-                {user.role === "admin" && <span className="chip bg-accent-soft text-accent">admin</span>}
+                {user.role === "admin" && <Link href="/admin" className="chip bg-accent-soft text-accent hover:bg-accent/15">Admin</Link>}
                 <form action={signOut}>
                   <button className="text-muted hover:text-ink">Salir</button>
                 </form>

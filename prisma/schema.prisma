@@ -15,10 +15,23 @@ model User {
   passwordHash String
   role         String    @default("user") // user | admin
   consentAt    DateTime  // aceptación de la política de privacidad (Ley 29733)
+  emailVerifiedAt DateTime? // null = aún no confirmó su correo (no puede ingresar)
   createdAt    DateTime  @default(now())
   sessions     Session[]
   projects     Project[]
   resets       PasswordReset[]
+  verifications EmailVerification[]
+}
+
+model EmailVerification {
+  id        String    @id // sha256 del token enviado por correo
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model PasswordReset {
