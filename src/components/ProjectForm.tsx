@@ -14,12 +14,15 @@ export function ProjectForm({
   prompts,
   submitLabel,
   maxPrompts,
+  suggestLeft,
 }: {
   action: (form: FormData) => Promise<void>;
   project?: Project;
   prompts?: Prompt[];
   submitLabel: string;
   maxPrompts: number;
+  /** Búsquedas de "Sugerir prompts" que le quedan (null = sin límite; undefined = no disponible). */
+  suggestLeft?: number | null;
 }) {
   const brandColor = project ? ownBrand(project).color! : PALETTE[0];
   return (
@@ -83,7 +86,7 @@ export function ProjectForm({
         <p className="mb-2 text-xs text-muted">
           Una pregunta completa por casilla, tal como tus clientes se la harían a la IA. Cada casilla se mide por separado. Usa etiquetas (p. ej. el producto) para agruparlos y filtrar el panel; separa varias con comas.
         </p>
-        <PromptRows initial={prompts?.filter((p) => p.active).map((p) => ({ text: p.text, tags: tagsOf(p) })) ?? []} max={maxPrompts} />
+        <PromptRows initial={prompts?.filter((p) => p.active).map((p) => ({ text: p.text, tags: tagsOf(p) })) ?? []} max={maxPrompts} suggestLeft={suggestLeft} />
       </fieldset>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="btn-primary">{submitLabel}</button>

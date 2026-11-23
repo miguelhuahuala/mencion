@@ -24,6 +24,7 @@ model User {
   projects     Project[]
   resets       PasswordReset[]
   verifications EmailVerification[]
+  suggestions   Suggestion[]
 }
 
 model EmailVerification {
@@ -124,4 +125,21 @@ model Response {
 
   @@index([runId])
   @@index([promptId, engine])
+}
+
+/// Búsquedas de "Sugerir prompts" (preguntas reales con volumen vía DataForSEO LLM Mentions + redacción con Claude)
+model Suggestion {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic     String   // tema normalizado (minúsculas)
+  country   String
+  language  String
+  results   String   @default("[]") // JSON {text, volume, phrases[]}[]
+  costUsd   Float    @default(0)
+  cached    Boolean  @default(false) // reutilizó una búsqueda anterior (no consume cupo ni saldo)
+  createdAt DateTime @default(now())
+
+  @@index([topic, country, language, createdAt])
+  @@index([userId, createdAt])
 }

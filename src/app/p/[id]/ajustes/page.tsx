@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { findProjectFor, limitsFor } from "@/lib/limits";
 import { ProjectForm } from "@/components/ProjectForm";
+import { suggestLeftFor } from "@/lib/suggest";
 import { deleteProject, updateProject } from "../../../actions";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
       </div>
       {error && <div role="alert" className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
       <section className="card p-6">
-        <ProjectForm action={updateProject} project={project} prompts={project.prompts} submitLabel="Guardar cambios" maxPrompts={limitsFor(user).maxPrompts} />
+        <ProjectForm action={updateProject} project={project} prompts={project.prompts} submitLabel="Guardar cambios" maxPrompts={limitsFor(user).maxPrompts} suggestLeft={await suggestLeftFor(user)} />
       </section>
       <section className="card flex items-center justify-between gap-4 border-bad/30 p-6">
         <div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { createProject } from "./actions";
 import { ProjectForm } from "@/components/ProjectForm";
+import { suggestLeftFor } from "@/lib/suggest";
 import { Landing } from "@/components/Landing";
 import { hasCredentials } from "@/lib/dataforseo";
 import { currentUser, isAdmin } from "@/lib/auth";
@@ -102,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         <section className="card p-6">
           <h2 className="mb-1 font-semibold">{ownCount === 0 ? "Crea tu primer proyecto" : "Nuevo proyecto"}</h2>
           <p className="mb-4 text-sm text-muted">Después de crearlo podrás lanzar la medición con el botón “Ejecutar ahora”.</p>
-          <ProjectForm action={createProject} submitLabel="Crear proyecto" maxPrompts={limits.maxPrompts} />
+          <ProjectForm action={createProject} submitLabel="Crear proyecto" maxPrompts={limits.maxPrompts} suggestLeft={await suggestLeftFor(user)} />
         </section>
       ) : (
         <p className="text-sm text-muted">Ya usas el proyecto de tu plan. Puedes cambiar su marca, competidores y prompts en <strong>Ajustes</strong>.</p>

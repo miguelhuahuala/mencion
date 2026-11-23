@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { parseTags } from "@/lib/tags";
+import { suggestPrompts } from "@/lib/suggest";
 import { startRun } from "@/lib/runner";
 import { PALETTE, cleanDomain, competitorsFromForm, isPaletteColor } from "@/lib/projects";
 import { requireUser } from "@/lib/auth";
@@ -114,4 +115,19 @@ export async function deleteProject(form: FormData) {
   if (!project || project.isDemo) fail("/", "Proyecto no encontrado");
   await db.project.delete({ where: { id } });
   redirect("/");
+}
+
+/** "Sugerir prompts" desde el formulario del proyecto. Devuelve datos (no redirige). */
+export async function suggestPromptsAction(input: { topic: string; country: string; language: string; brands: string[] }) {
+  const user = await requireUser();
+  const parsed = z
+    .object({
+      topic: z.string().max(200),
+      country: z.string().trim().length(2),
+      language: z.string().trim().min(2).max(5),
+      brands: z.array(z.string().max(200)).max(60),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Datos no válidos" };
+  return suggestPrompts(user, parsed.data);
 }

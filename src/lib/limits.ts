@@ -24,7 +24,9 @@ export async function monthlyBudget() {
   start.setUTCDate(1);
   start.setUTCHours(0, 0, 0, 0);
   const agg = await db.run.aggregate({ _sum: { costUsd: true }, where: { startedAt: { gte: start }, mode: { not: "demo" } } });
-  const spent = agg._sum.costUsd ?? 0;
+  // También cuentan las búsquedas de "Sugerir prompts"
+  const sugg = await db.suggestion.aggregate({ _sum: { costUsd: true }, where: { createdAt: { gte: start } } });
+  const spent = (agg._sum.costUsd ?? 0) + (sugg._sum.costUsd ?? 0);
   return { cap, spent, exhausted: cap > 0 && spent >= cap };
 }
 

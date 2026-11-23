@@ -148,3 +148,44 @@ export async function listModels(engine: Exclude<Engine, "chatgpt">) {
   const { results } = await call(`/ai_optimization/${engine}/llm_responses/models`, undefined, "GET");
   return results as Array<{ model_name: string; web_search_supported?: boolean; reasoning?: boolean }>;
 }
+
+/** Ubicación de DataForSEO para un país del proyecto (por defecto, Estados Unidos). */
+export const locationCodeFor = (country: string) => LOCATION_CODE[country.toUpperCase()] ?? LOCATION_CODE.US;
+
+export type SearchedQuestion = { phrase: string; volume: number };
+
+/**
+ * Preguntas reales sobre un tema, con volumen de búsqueda mensual (LLM Mentions, Google AI Overviews).
+ * En Latinoamérica solo hay datos de Google AI Overviews (ChatGPT solo en EE. UU./inglés).
+ * Costo: $0.10 por consulta + $0.001 por fila.
+ */
+export async function searchQuestions(topic: string, opts: { country: string; language: string; limit?: number }) {
+  const { result, cost } = await call("/ai_optimization/llm_mentions/search_mentions/live", [
+    {
+      target: [{ keyword: topic.slice(0, 250), search_scope: ["question"] }],
+      location_code: locationCodeFor(opts.country),
+      language_code: opts.language,
+      platform: "google",
+      order_by: ["ai_search_volume,desc"],
+      limit: opts.limit ?? 40,
+    },
+  ]);
+  const items = (result.items as Array<{ question?: string; ai_search_volume?: number | null }> | undefined) ?? [];
+  const seen = new Set<string>();
+  const questions: SearchedQuestion[] = [];
+  for (const it of items) {
+    const phrase = (it.question ?? "").trim();
+    if (!phrase || seen.has(phrase.toLowerCase())) continue;
+    seen.add(phrase.toLowerCase());
+    questions.push({ phrase, volume: it.ai_search_volume ?? 0 });
+  }
+  return { questions, cost };
+}
+
+/** Pregunta simple a Claude (sin búsqueda web) vía DataForSEO; se usa para redactar sugerencias. */
+export async function askClaudePlain(prompt: string, system?: string) {
+  const task: Record<string, unknown> = { user_prompt: prompt.slice(0, 500), model_name: MODEL.claude(), max_output_tokens: 600 };
+  if (system) task.system_message = system.slice(0, 500);
+  const { result, cost } = await call("/ai_optimization/claude/llm_responses/live", [task]);
+  return { text: parseLlmResponse(result).text, cost };
+}
