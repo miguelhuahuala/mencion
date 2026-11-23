@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { endSession, hashPassword, isAdminEmail, startSession, verifyPassword } from "@/lib/auth";
-import { activate, sendVerificationEmail, verificationRequired } from "@/lib/verification";
+import { activate, checkVerificationCode, sendVerificationEmail, verificationRequired } from "@/lib/verification";
 
 const back = (path: string, error: string, email?: string) =>
   redirect(`${path}?error=${encodeURIComponent(error)}${email ? `&email=${encodeURIComponent(email)}` : ""}`);
@@ -46,7 +46,7 @@ export async function signUp(form: FormData) {
       await sendVerificationEmail(user);
     } catch (e) {
       console.error("[menciones] no se pudo enviar la verificación:", e);
-      return pending(user.email, { error: "Creamos tu cuenta, pero no pudimos enviar el correo. Pulsa “Reenviar”." });
+      return pending(user.email, { error: "Creamos tu cuenta, pero no pudimos enviar el correo. Pulsa “Enviar código nuevo”." });
     }
     return pending(user.email, { enviado: "1" });
   }
@@ -65,7 +65,7 @@ export async function signIn(form: FormData) {
     return back("/ingresar", "Correo o contraseña incorrectos", email);
   }
   if (!user.emailVerifiedAt) {
-    return pending(user.email, { error: "Antes de ingresar confirma tu correo con el enlace que te enviamos." });
+    return pending(user.email, { error: "Antes de ingresar confirma tu correo con el código que te enviamos." });
   }
   if (isAdminEmail(user.email) && user.role !== "admin") {
     await db.user.update({ where: { id: user.id }, data: { role: "admin" } });
@@ -81,13 +81,23 @@ export async function resendVerification(form: FormData) {
   if (user && !user.emailVerifiedAt) {
     try {
       const sent = await sendVerificationEmail(user);
-      if (!sent) return pending(email, { error: "Ya te enviamos un correo hace un momento. Espera 2 minutos para pedir otro." });
+      if (!sent) return pending(email, { error: "Ya te enviamos un código hace un momento. Espera 2 minutos para pedir otro." });
     } catch (e) {
       console.error("[menciones] no se pudo reenviar la verificación:", e);
       return pending(email, { error: "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos." });
     }
   }
   return pending(email, { enviado: "1" });
+}
+
+/** Confirmar el correo con el código de 6 dígitos; si es correcto, inicia sesión. */
+export async function confirmCode(form: FormData) {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const code = String(form.get("code") ?? "");
+  const result = await checkVerificationCode(email, code);
+  if (!result.ok) return pending(email, { error: result.error });
+  await startSession(result.userId);
+  redirect("/?bienvenida=1");
 }
 
 export async function signOut() {
