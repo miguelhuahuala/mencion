@@ -6,6 +6,7 @@ import { findProjectFor, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
 import { METRIC_INFO } from "@/lib/metrics";
+import { hasTag, tagsOf } from "@/lib/tags";
 import { dateTime, usd } from "@/lib/format";
 import { ENGINE_LABEL } from "@/lib/types";
 import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
@@ -26,16 +27,17 @@ export default async function ProjectPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; tag?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, tag } = await searchParams;
   const user = await currentUser();
   if (!(await findProjectFor(id, user))) notFound();
 
-  const d = await projectDashboard(id);
+  const d = await projectDashboard(id, tag);
   const { project, kpis } = d;
   const activePrompts = project.prompts.filter((p) => p.active);
+  const shownPrompts = d.activeTag ? activePrompts.filter((p) => hasTag(p, d.activeTag!)) : activePrompts;
   const engines = d.byEngine.map((e) => e.engine);
   const hasSentiment = d.shareOfVoice.some((s) => s.positive + s.neutral + s.negative > 0);
   const avail = project.isDemo || d.running ? null : await runAvailability(id, user);
@@ -112,6 +114,31 @@ export default async function ProjectPage({
         </div>
       ) : (
         <>
+          {d.tags.length > 0 && (
+            <nav aria-label="Filtrar por etiqueta" className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted">Etiqueta:</span>
+              {[null, ...d.tags].map((t) => {
+                const on = t === d.activeTag;
+                return (
+                  <Link
+                    key={t ?? "todas"}
+                    href={t ? `/p/${id}?tag=${encodeURIComponent(t)}` : `/p/${id}`}
+                    scroll={false}
+                    aria-current={on ? "true" : undefined}
+                    className={`rounded-full border px-3 py-1 transition-colors ${on ? "border-accent bg-accent text-white" : "border-line bg-white text-ink hover:border-accent/50"}`}
+                  >
+                    {t ?? "Todas"}
+                  </Link>
+                );
+              })}
+              {d.activeTag && (
+                <span className="text-xs text-muted">
+                  · {shownPrompts.length} de {activePrompts.length} prompts. Todas las cifras se calculan solo con estos.
+                </span>
+              )}
+            </nav>
+          )}
+
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Kpi label="Visibilidad" value={`${kpis.visibility}%`} hint={`de ${kpis.answers} respuestas te mencionan`} info={METRIC_INFO.visibility} />
             <Kpi label="Share of voice" value={`${kpis.share}%`} hint="de las menciones de marcas" info={METRIC_INFO.share} />
@@ -206,9 +233,14 @@ export default async function ProjectPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {activePrompts.map((p) => (
+                  {shownPrompts.map((p) => (
                     <tr key={p.id}>
-                      <td className="max-w-md py-2.5 pr-4">{p.text}</td>
+                      <td className="max-w-md py-2.5 pr-4">
+                        {p.text}
+                        {tagsOf(p).map((t) => (
+                          <span key={t} className="chip ml-1.5 bg-surface align-middle text-[10px] text-muted">{t}</span>
+                        ))}
+                      </td>
                       {engines.map((e) => {
                         const r = d.responses.find((x) => x.promptId === p.id && x.engine === e);
                         const own = r?.hits.find((h) => h.own);

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { parseTags } from "@/lib/tags";
 import { startRun } from "@/lib/runner";
 import { PALETTE, cleanDomain, competitorsFromForm, isPaletteColor } from "@/lib/projects";
 import { requireUser } from "@/lib/auth";
@@ -28,7 +29,14 @@ function read(form: FormData, maxPrompts: number, errorPath: string) {
   const d = parsed.data;
   // Una casilla por prompt (campos repetidos "prompt"); se ignoran vacíos y duplicados
   const legacy = String(form.get("prompts") ?? "").split("\n"); // formulario anterior (textarea), por si una pestaña vieja lo envía
-  const prompts = [...new Set([...form.getAll("prompt").map(String), ...legacy].map((p) => p.trim().slice(0, 500)).filter(Boolean))];
+  // "promptTags" llega en el mismo orden que "prompt"; si un prompt se repite, gana la primera casilla
+  const tagFields = form.getAll("promptTags").map(String);
+  const tagsByPrompt = new Map<string, string>();
+  [...form.getAll("prompt").map(String), ...legacy].forEach((raw, i) => {
+    const text = raw.trim().slice(0, 500);
+    if (text && !tagsByPrompt.has(text)) tagsByPrompt.set(text, JSON.stringify(parseTags(tagFields[i] ?? "")));
+  });
+  const prompts = [...tagsByPrompt.keys()];
   if (!prompts.length) return fail(errorPath, "Agrega al menos un prompt");
   if (prompts.length > maxPrompts) return fail(errorPath, `Tu plan permite hasta ${maxPrompts} prompts por proyecto (escribiste ${prompts.length}).`);
   return {
@@ -40,6 +48,7 @@ function read(form: FormData, maxPrompts: number, errorPath: string) {
     country: d.country.toUpperCase(),
     language: d.language.toLowerCase(),
     prompts,
+    tagsByPrompt,
   };
 }
 
@@ -48,8 +57,10 @@ export async function createProject(form: FormData) {
   const limits = limitsFor(user);
   const count = await db.project.count({ where: { userId: user.id } });
   if (count >= limits.maxProjects) fail("/", `Tu plan permite ${limits.maxProjects} proyecto. Edita el que ya tienes.`);
-  const { prompts, ...data } = read(form, limits.maxPrompts, "/");
-  const project = await db.project.create({ data: { ...data, userId: user.id, prompts: { create: prompts.map((text) => ({ text })) } } });
+  const { prompts, tagsByPrompt, ...data } = read(form, limits.maxPrompts, "/");
+  const project = await db.project.create({
+    data: { ...data, userId: user.id, prompts: { create: prompts.map((text) => ({ text, tags: tagsByPrompt.get(text)! })) } },
+  });
   redirect(`/p/${project.id}`);
 }
 
@@ -58,14 +69,17 @@ export async function updateProject(form: FormData) {
   const id = String(form.get("id"));
   const found = await findProjectFor(id, user);
   if (!found || found.isDemo) fail("/", "Proyecto no encontrado");
-  const { prompts, ...data } = read(form, limitsFor(user).maxPrompts, `/p/${id}/ajustes`);
+  const { prompts, tagsByPrompt, ...data } = read(form, limitsFor(user).maxPrompts, `/p/${id}/ajustes`);
   const existing = new Set((await db.prompt.findMany({ where: { projectId: id }, select: { text: true } })).map((p) => p.text));
   await db.$transaction([
     db.project.update({ where: { id }, data }),
     // Desactiva los prompts quitados (se conserva su historial) y crea/reactiva los nuevos
     db.prompt.updateMany({ where: { projectId: id, text: { notIn: prompts } }, data: { active: false } }),
-    db.prompt.updateMany({ where: { projectId: id, text: { in: prompts } }, data: { active: true } }),
-    ...prompts.filter((t) => !existing.has(t)).map((text) => db.prompt.create({ data: { projectId: id, text } })),
+    ...prompts.map((text) =>
+      existing.has(text)
+        ? db.prompt.updateMany({ where: { projectId: id, text }, data: { active: true, tags: tagsByPrompt.get(text)! } })
+        : db.prompt.create({ data: { projectId: id, text, tags: tagsByPrompt.get(text)! } }),
+    ),
   ]);
   redirect(`/p/${id}`);
 }

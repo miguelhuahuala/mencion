@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { ENGINES, parseJson, type BrandHit, type Engine, type Source } from "./types";
 import { OTHER_COLOR, competitorsOf, ownBrand } from "./projects";
+import { allTags, hasTag } from "./tags";
 
 export type ParsedResponse = {
   id: string;
@@ -17,11 +18,17 @@ function pct(n: number, d: number) {
   return d ? Math.round((n / d) * 100) : 0;
 }
 
-export async function projectDashboard(projectId: string) {
+/** tag: si se indica, todas las métricas se calculan solo con los prompts que tienen esa etiqueta. */
+export async function projectDashboard(projectId: string, tag?: string | null) {
   const project = await db.project.findUniqueOrThrow({
     where: { id: projectId },
     include: { prompts: { orderBy: { createdAt: "asc" } } },
   });
+  const tags = allTags(project.prompts.filter((p) => p.active));
+  const activeTag = tag ? tags.find((t) => t.toLowerCase() === tag.toLowerCase()) ?? null : null;
+  // Incluye prompts desactivados con esa etiqueta, para no perder su historial en la tendencia
+  const inTag = activeTag ? new Set(project.prompts.filter((p) => hasTag(p, activeTag)).map((p) => p.id)) : null;
+  const keep = (r: { promptId: string }) => !inTag || inTag.has(r.promptId);
   const runs = await db.run.findMany({ where: { projectId }, orderBy: { startedAt: "asc" } });
   const latest = [...runs].reverse().find((r) => r.status === "done") ?? null;
   const running = runs.find((r) => r.status === "running") ?? null;
@@ -38,7 +45,7 @@ export async function projectDashboard(projectId: string) {
       ].slice(0, 6)
     : [];
 
-  const rows = latest ? await db.response.findMany({ where: { runId: latest.id } }) : [];
+  const rows = (latest ? await db.response.findMany({ where: { runId: latest.id } }) : []).filter(keep);
   const responses: ParsedResponse[] = rows.map((r) => ({
     id: r.id,
     promptId: r.promptId,
@@ -94,7 +101,7 @@ export async function projectDashboard(projectId: string) {
   // Tendencia: visibilidad propia por corrida terminada
   const doneRuns = runs.filter((r) => r.status === "done").slice(-14);
   const trendRows = doneRuns.length
-    ? await db.response.findMany({ where: { runId: { in: doneRuns.map((r) => r.id) }, error: null }, select: { runId: true, mentions: true } })
+    ? await db.response.findMany({ where: { runId: { in: doneRuns.map((r) => r.id) }, error: null }, select: { runId: true, promptId: true, mentions: true } }).then((rs) => rs.filter(keep))
     : [];
   const trend = doneRuns.map((run) => {
     const set = trendRows.filter((t) => t.runId === run.id);
@@ -120,6 +127,8 @@ export async function projectDashboard(projectId: string) {
   const own = shareOfVoice.find((s) => s.own);
   return {
     project,
+    tags,
+    activeTag,
     latest,
     running,
     failedRun,

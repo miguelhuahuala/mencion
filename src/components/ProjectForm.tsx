@@ -3,6 +3,7 @@ import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, PALETTE_OPTIONS, competitorsOf, 
 import { ColorPicker } from "./ColorPicker";
 import { CompetitorRows } from "./CompetitorRows";
 import { PromptRows } from "./PromptRows";
+import { tagsOf } from "@/lib/tags";
 import { parseJson } from "@/lib/types";
 import { COUNTRIES } from "@/lib/locale";
 
@@ -80,9 +81,9 @@ export function ProjectForm({
       <fieldset className="sm:col-span-2">
         <legend className="label mb-1">Prompts a seguir (hasta {maxPrompts})</legend>
         <p className="mb-2 text-xs text-muted">
-          Una pregunta completa por casilla, tal como tus clientes se la harían a la IA. Cada casilla se mide por separado.
+          Una pregunta completa por casilla, tal como tus clientes se la harían a la IA. Cada casilla se mide por separado. Usa etiquetas (p. ej. el producto) para agruparlos y filtrar el panel; separa varias con comas.
         </p>
-        <PromptRows initial={prompts?.filter((p) => p.active).map((p) => p.text) ?? []} max={maxPrompts} />
+        <PromptRows initial={prompts?.filter((p) => p.active).map((p) => ({ text: p.text, tags: tagsOf(p) })) ?? []} max={maxPrompts} />
       </fieldset>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="btn-primary">{submitLabel}</button>

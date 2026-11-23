@@ -87,6 +87,7 @@ model Prompt {
   project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   text      String
   active    Boolean    @default(true)
+  tags      String     @default("[]") // JSON: etiquetas para agrupar (p. ej. por producto)
   createdAt DateTime   @default(now())
   responses Response[]
 }
