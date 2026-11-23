@@ -48,7 +48,7 @@ export function CompetitorRows({
 
   return (
     <div className="space-y-2">
-      <div className="hidden grid-cols-[2.5rem_1fr_1fr_1fr_2rem] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted sm:grid">
+      <div className="hidden grid-cols-[2.5rem_1fr_1fr_1fr_2rem] gap-2 px-1 text-xs font-medium text-muted sm:grid">
         <span>Color</span>
         <span>Marca</span>
         <span>Dominio</span>
