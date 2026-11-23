@@ -47,9 +47,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             {user ? (
               <div className="flex items-center gap-3 text-sm">
-                <Link href="/cuenta" className="max-w-[200px] truncate text-muted hover:text-ink" title="Mi cuenta">
-                  <span className="hidden sm:inline">{user.email}</span>
-                  <span className="sm:hidden">Mi cuenta</span>
+                <Link href="/cuenta" className="text-muted hover:text-ink" title={user.email}>
+                  Mi cuenta
                 </Link>
                 {user.role === "admin" && <Link href="/admin" className="chip bg-accent-soft text-accent hover:bg-accent/15">Admin</Link>}
                 <form action={signOut}>
@@ -66,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-1 px-4 pb-24 text-xs text-muted">
-          <span>Datos de IA vía DataForSEO AI Optimization API</span>
+          <span>© {new Date().getFullYear()} Menciones</span>
           <Link href="/privacidad" className="hover:text-ink">Política de privacidad</Link>
         </footer>
         <WhatsAppButton />
