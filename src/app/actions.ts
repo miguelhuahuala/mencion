@@ -27,7 +27,8 @@ function read(form: FormData, maxPrompts: number, errorPath: string) {
   if (!parsed.success) return fail(errorPath, parsed.error.issues[0].message);
   const d = parsed.data;
   // Una casilla por prompt (campos repetidos "prompt"); se ignoran vacíos y duplicados
-  const prompts = [...new Set(form.getAll("prompt").map((p) => String(p).trim().slice(0, 500)).filter(Boolean))];
+  const legacy = String(form.get("prompts") ?? "").split("\n"); // formulario anterior (textarea), por si una pestaña vieja lo envía
+  const prompts = [...new Set([...form.getAll("prompt").map(String), ...legacy].map((p) => p.trim().slice(0, 500)).filter(Boolean))];
   if (!prompts.length) return fail(errorPath, "Agrega al menos un prompt");
   if (prompts.length > maxPrompts) return fail(errorPath, `Tu plan permite hasta ${maxPrompts} prompts por proyecto (escribiste ${prompts.length}).`);
   return {
