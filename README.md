@@ -1,12 +1,12 @@
-# Mencion
+# Menciones
 
-**¿Las IAs recomiendan tu marca?** Mencion le hace a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que
+**¿Las IAs recomiendan tu marca?** Menciones le hace a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que
 tus clientes y mide en cuántas respuestas apareces, en qué posición, con qué tono y qué fuentes citan, frente a tu
 competencia.
 
 🌐 [menciones.org](https://menciones.org)
 
-![Dashboard de Mencion: BCP frente a los principales bancos del Perú (medición real, 22-nov-2026)](docs/dashboard.jpg)
+![Dashboard de Menciones: BCP frente a los principales bancos del Perú (medición real, 22-nov-2026)](docs/dashboard.jpg)
 
 ## Qué mide
 

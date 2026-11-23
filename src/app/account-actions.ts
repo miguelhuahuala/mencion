@@ -31,9 +31,9 @@ export async function requestReset(form: FormData) {
       try {
         await sendEmail({
           to: user.email,
-          subject: "Restablece tu contraseña de Mencion",
-          text: `Hola,\n\nPara crear una nueva contraseña entra a este enlace (vence en ${RESET_MINUTES} minutos):\n${link}\n\nSi no lo pediste, ignora este correo; tu contraseña no cambiará.\n\nMencion`,
-          html: `<p>Hola,</p><p>Para crear una nueva contraseña pulsa el botón (el enlace vence en ${RESET_MINUTES} minutos):</p><p><a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Crear nueva contraseña</a></p><p style="color:#5d6679;font-size:13px">Si no lo pediste, ignora este correo; tu contraseña no cambiará.</p><p>Mencion</p>`,
+          subject: "Restablece tu contraseña de Menciones",
+          text: `Hola,\n\nPara crear una nueva contraseña entra a este enlace (vence en ${RESET_MINUTES} minutos):\n${link}\n\nSi no lo pediste, ignora este correo; tu contraseña no cambiará.\n\nMenciones`,
+          html: `<p>Hola,</p><p>Para crear una nueva contraseña pulsa el botón (el enlace vence en ${RESET_MINUTES} minutos):</p><p><a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Crear nueva contraseña</a></p><p style="color:#5d6679;font-size:13px">Si no lo pediste, ignora este correo; tu contraseña no cambiará.</p><p>Menciones</p>`,
         });
       } catch (e) {
         console.error("[mencion] no se pudo enviar el correo de recuperación:", e);

@@ -44,7 +44,7 @@ const faqs = [
   ["¿Por qué importa aparecer en las respuestas de IA?", "Cada vez más personas preguntan a ChatGPT o Perplexity qué comprar o a quién contratar, en lugar de buscar en Google. Si la IA no te menciona, ese cliente ni siquiera llega a conocerte. Optimizar para esto se conoce como GEO (Generative Engine Optimization)."],
   ["¿De dónde salen los datos?", "Hacemos tus preguntas en cada IA a través de DataForSEO, con búsqueda web activada y localizada en tu país, y analizamos las respuestas reales. No estimamos ni inventamos resultados."],
   ["¿Cada cuánto se mide?", "En el plan gratis, una vez por semana. Cada medición queda guardada para que veas la evolución."],
-  ["¿Tengo que instalar algo?", "No. Mencion funciona en el navegador, desde la computadora o el celular. Creas tu cuenta y listo."],
+  ["¿Tengo que instalar algo?", "No. Menciones funciona en el navegador, desde la computadora o el celular. Creas tu cuenta y listo."],
   ["¿Qué hacen con mis datos?", "Solo los usamos para darte el servicio y no los vendemos. Puedes eliminar tu cuenta y todos tus datos cuando quieras desde “Mi cuenta”."],
 ];
 
@@ -60,13 +60,14 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
       {/* Hero */}
       <section className="grid grid-cols-1 items-center gap-12 pt-6 lg:grid-cols-[1fr_1.15fr] [&>*]:min-w-0">
         <div>
-          <p className="chip bg-accent-soft text-accent">GEO · Visibilidad en buscadores con IA</p>
+          <p className="chip bg-accent-soft text-accent">Visibilidad en IA</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
             ¿Las IAs recomiendan tu marca… o la de tu competencia?
           </h1>
-          <p className="mt-5 text-lg text-muted text-pretty">
-            Tus clientes ya le preguntan a ChatGPT antes que a Google. Mencion mide cuántas veces te mencionan ChatGPT, Claude,
-            Gemini y Perplexity, en qué posición y con qué fuentes, frente a tu competencia.
+          <p className="mt-5 text-lg text-muted text-pretty">Muchos usuarios ya le preguntan a ChatGPT antes que a Google.</p>
+          <p className="mt-2 text-lg text-muted text-pretty">
+            Menciones mide cuántas veces te mencionan ChatGPT, Claude, Gemini y Perplexity, en qué posición y con qué fuentes,
+            frente a tu competencia.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/registro" className="btn-primary px-5 py-2.5 text-base">Empieza gratis</Link>
@@ -99,7 +100,7 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
           <h2 className="text-3xl font-semibold tracking-tight text-balance">El SEO de siempre ya no basta</h2>
           <p className="mt-3 text-muted">
             Google te muestra 10 enlaces; la IA da una sola respuesta y nombra a 3 o 4 marcas. Si no estás entre ellas, no existes
-            para ese cliente. Mencion te dice dónde estás y qué hacer.
+            para ese cliente. Menciones te dice dónde estás y qué hacer.
           </p>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">

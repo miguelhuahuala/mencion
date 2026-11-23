@@ -10,7 +10,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", di
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "https://menciones.org"),
-  title: { default: "Mencion — ¿Las IAs recomiendan tu marca?", template: "%s · Mencion" },
+  title: { default: "Menciones — ¿Las IAs recomiendan tu marca?", template: "%s · Menciones" },
   description:
     "Mide gratis cuántas veces ChatGPT, Claude, Gemini y Perplexity mencionan tu marca frente a tu competencia, en qué posición y con qué fuentes.",
   // Solo se indexa en producción (ALLOW_INDEXING=true)
@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <span aria-hidden className="grid size-7 place-items-center rounded-lg bg-accent font-mono text-sm text-white">“</span>
-              Mencion
+              Menciones
             </Link>
             {user ? (
               <div className="flex items-center gap-3 text-sm">

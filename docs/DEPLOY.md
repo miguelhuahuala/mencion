@@ -1,4 +1,4 @@
-# Poner Mencion en funcionamiento
+# Poner Menciones en funcionamiento
 
 Hay tres etapas: 1) probar con datos reales en tu computadora, 2) publicar la app en menciones.org y 3) automatizar la
 medición diaria.
@@ -43,7 +43,7 @@ npm run dev
 
 ## 2. Publicar en menciones.org (Railway)
 
-Mencion es un sitio web: los usuarios entran desde el navegador, sin instalar nada. Para funcionar necesita un servidor
+Menciones es un sitio web: los usuarios entran desde el navegador, sin instalar nada. Para funcionar necesita un servidor
 Node siempre encendido, porque las mediciones trabajan en segundo plano, y un disco para la base de datos SQLite.
 Railway ofrece las dos cosas sin cambiar código. El hosting compartido (Banahosting, cPanel) no sirve para la app,
 aunque puedes seguir usándolo para el DNS del dominio. Vercel tampoco sirve tal como está: es serverless y corta las
@@ -112,7 +112,7 @@ Sin esto el sitio funciona, pero quien olvide su contraseña verá “La recuper
 4. En **API Keys → Create API Key** crea una clave con permiso **Sending access**.
 5. En Railway, pestaña **Variables**, agrega:
    - `RESEND_API_KEY` = la clave del paso 4
-   - `EMAIL_FROM` = `Mencion <no-responder@menciones.org>`
+   - `EMAIL_FROM` = `Menciones <no-responder@menciones.org>`
 6. Prueba en https://menciones.org/recuperar con tu correo.
 
 ## Costo estimado mensual

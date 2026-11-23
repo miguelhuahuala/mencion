@@ -2,7 +2,7 @@
   "name": "mencion",
   "version": "0.1.0",
   "private": true,
-  "description": "Mencion — monitor de visibilidad de marca en respuestas de IA (ChatGPT, Claude, Gemini, Perplexity) vía DataForSEO.",
+  "description": "Menciones — monitor de visibilidad de marca en respuestas de IA (ChatGPT, Claude, Gemini, Perplexity) vía DataForSEO.",
   "scripts": {
     "dev": "next dev -p 3030",
     "build": "prisma generate && next build",

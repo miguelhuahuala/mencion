@@ -85,17 +85,23 @@ export function DashboardPreview() {
             <div className="card p-3">
               <div className="mb-2 flex items-center justify-between text-xs font-semibold">
                 <span>Prompt por prompt</span>
-                <span className="flex gap-2.5">{ENGINES.map((e) => <EngineLogo key={e} engine={e} size={13} />)}</span>
+                <span className="flex shrink-0 gap-1">
+                  {ENGINES.map((e) => (
+                    <span key={e} className="flex w-7 justify-center" title={ENGINE_LABEL[e]}><EngineLogo engine={e} size={13} /></span>
+                  ))}
+                </span>
               </div>
               <ul className="divide-y divide-line text-xs">
                 {prompts.map(([q, cells]) => (
                   <li key={q} className="flex items-center justify-between gap-2 py-1.5">
                     <span className="truncate text-muted">{q}</span>
-                    <span className="flex shrink-0 gap-1.5">
-                      {cells.map((c, i) =>
-                        c ? <span key={i} className="chip bg-good-soft px-1.5 font-mono text-[10px] text-good">#{c}</span>
-                          : <span key={i} className="chip bg-surface px-1.5 text-[10px] text-muted">no</span>,
-                      )}
+                    <span className="flex shrink-0 gap-1">
+                      {cells.map((c, i) => (
+                        <span key={i} className="flex w-7 justify-center">
+                          {c ? <span className="chip bg-good-soft px-1.5 font-mono text-[10px] text-good">#{c}</span>
+                            : <span className="chip bg-surface px-1.5 text-[10px] text-muted">no</span>}
+                        </span>
+                      ))}
                     </span>
                   </li>
                 ))}

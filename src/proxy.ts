@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
   }
   return new NextResponse("Acceso restringido", {
     status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Mencion", charset="UTF-8"' },
+    headers: { "WWW-Authenticate": 'Basic realm="Menciones", charset="UTF-8"' },
   });
 }
 
