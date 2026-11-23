@@ -24,7 +24,7 @@ export async function requestReset(form: FormData) {
     const recent = await db.passwordReset.findFirst({ where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 2 * 60_000) } } });
     if (!recent) {
       const token = newToken();
-      await db.passwordReset.create({
+      const reset = await db.passwordReset.create({
         data: { id: sha256(token), userId: user.id, expiresAt: new Date(Date.now() + RESET_MINUTES * 60_000) },
       });
       const link = `${siteUrl()}/restablecer?token=${token}`;
@@ -37,6 +37,8 @@ export async function requestReset(form: FormData) {
         });
       } catch (e) {
         console.error("[mencion] no se pudo enviar el correo de recuperación:", e);
+        // Si el correo no salió, se borra el enlace para permitir reintentar de inmediato
+        await db.passwordReset.delete({ where: { id: reset.id } }).catch(() => {});
         go("/recuperar", { error: "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos." });
       }
     }
