@@ -82,6 +82,24 @@ export default async function ProjectPage({
         </div>
       )}
       {error && <div className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">{error}</div>}
+      {d.failedRun && !d.running && (
+        <div role="alert" className="rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">
+          <strong>La última medición ({dateTime(d.failedRun.startedAt)}) no se pudo completar.</strong>{" "}
+          {user?.role === "admin" ? (
+            <>
+              Ninguna IA respondió. Detalle técnico:
+              <ul className="mt-2 list-disc space-y-1 pl-5 font-mono text-xs">
+                {d.failedErrors.map((e) => <li key={e}>{e}</li>)}
+              </ul>
+              {d.failedErrors.some((e) => /401|40100|auth|credencial|DATAFORSEO/i.test(e)) && (
+                <p className="mt-2">Parece un problema de credenciales: revisa <code className="font-mono">DATAFORSEO_LOGIN</code> y <code className="font-mono">DATAFORSEO_PASSWORD</code> en Railway.</p>
+              )}
+            </>
+          ) : (
+            <>No se descontó de tu plan. Inténtalo de nuevo en unos minutos; si se repite, escríbenos por WhatsApp.</>
+          )}
+        </div>
+      )}
       {d.running && (
         <div className="rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm text-accent">
           Consultando {activePrompts.length} prompts × 4 IAs… puede tardar unos minutos. Esta página se actualiza sola.

@@ -61,6 +61,7 @@ export async function startRun(projectId: string, engines: readonly Engine[] = E
         });
       } catch (e) {
         errors++;
+        console.error(`[menciones] medición ${run.id} · ${engine} falló:`, e instanceof Error ? e.message : e);
         await db.response.create({
           data: { runId: run.id, promptId: prompt.id, engine, error: e instanceof Error ? e.message : String(e) },
         });
@@ -70,8 +71,9 @@ export async function startRun(projectId: string, engines: readonly Engine[] = E
       where: { id: run.id },
       data: { status: errors === jobs.length ? "failed" : "done", finishedAt: new Date(), costUsd: cost, errorCount: errors },
     });
+    console.log(`[menciones] medición ${run.id} terminó: ${jobs.length - errors}/${jobs.length} ok, $${cost.toFixed(4)}`);
   })().catch(async (e) => {
-    console.error("[mencion] corrida falló:", e);
+    console.error("[menciones] medición falló:", e);
     await db.run.update({ where: { id: run.id }, data: { status: "failed", finishedAt: new Date() } });
   });
 

@@ -25,6 +25,18 @@ export async function projectDashboard(projectId: string) {
   const runs = await db.run.findMany({ where: { projectId }, orderBy: { startedAt: "asc" } });
   const latest = [...runs].reverse().find((r) => r.status === "done") ?? null;
   const running = runs.find((r) => r.status === "running") ?? null;
+  // Si la última medición falló, se muestran sus errores en el dashboard
+  const lastRun = runs[runs.length - 1] ?? null;
+  const failedRun = lastRun?.status === "failed" ? lastRun : null;
+  const failedErrors = failedRun
+    ? [
+        ...new Set(
+          (await db.response.findMany({ where: { runId: failedRun.id, error: { not: null } }, select: { engine: true, error: true } })).map(
+            (r) => `${r.engine}: ${r.error}`,
+          ),
+        ),
+      ].slice(0, 6)
+    : [];
 
   const rows = latest ? await db.response.findMany({ where: { runId: latest.id } }) : [];
   const responses: ParsedResponse[] = rows.map((r) => ({
@@ -110,6 +122,8 @@ export async function projectDashboard(projectId: string) {
     project,
     latest,
     running,
+    failedRun,
+    failedErrors,
     runsCount: runs.length,
     responses,
     kpis: {
