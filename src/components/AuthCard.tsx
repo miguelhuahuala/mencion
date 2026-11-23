@@ -8,7 +8,7 @@ export function AuthCard({
   title: string;
   subtitle?: React.ReactNode;
   error?: string;
-  /** Número de intento fallido: vuelve a animar el aviso en cada error y lo muestra desde el segundo. */
+  /** Número de envío: solo sirve para volver a animar el aviso en cada error (no se muestra). */
   attempt?: number;
   children: React.ReactNode;
 }) {
@@ -26,7 +26,6 @@ export function AuthCard({
           <span aria-hidden>⚠️</span>
           <span>
             {error}
-            {attempt && attempt > 1 ? <span className="ml-1 font-semibold">(intento {attempt})</span> : null}
           </span>
         </div>
       ) : null}

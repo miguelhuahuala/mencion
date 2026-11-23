@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { endSession, hashPassword, newToken, requireUser, startSession, verifyPassword } from "@/lib/auth";
 import { canSendEmail, sendEmail } from "@/lib/email";
+import { UNLOCKED } from "@/lib/login-lock";
 import { MAX_ATTEMPTS, attemptsMessage, codeEmail, codeMatches, hashCode, newCode, spaced } from "@/lib/codes";
 
 const go = (path: string, params: Record<string, string>): never =>
@@ -78,7 +79,7 @@ export async function resetPassword(form: FormData) {
   }
 
   await db.$transaction([
-    db.user.update({ where: { id: user!.id }, data: { passwordHash: await hashPassword(parsed.data!) } }),
+    db.user.update({ where: { id: user!.id }, data: { passwordHash: await hashPassword(parsed.data!), ...UNLOCKED } }),
     db.passwordReset.update({ where: { id: reset!.id }, data: { usedAt: new Date() } }),
     // Recibir el código en su correo también demuestra que el correo es suyo
     db.user.updateMany({ where: { id: user!.id, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } }),
@@ -97,7 +98,7 @@ export async function changePassword(form: FormData) {
   if (!(await verifyPassword(current, user.passwordHash))) go("/cuenta", { error: "La contraseña actual no es correcta" });
   if (!parsed.success) go("/cuenta", { error: parsed.error.issues[0].message });
   await db.$transaction([
-    db.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(parsed.data!) } }),
+    db.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(parsed.data!), ...UNLOCKED } }),
     db.session.deleteMany({ where: { userId: user.id } }),
   ]);
   await startSession(user.id);

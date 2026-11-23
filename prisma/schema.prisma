@@ -16,6 +16,9 @@ model User {
   role         String    @default("user") // user | admin
   consentAt    DateTime  // aceptación de la política de privacidad (Ley 29733)
   emailVerifiedAt DateTime? // null = aún no confirmó su correo (no puede ingresar)
+  failedLogins Int       @default(0)     // contraseñas incorrectas seguidas
+  lockedUntil  DateTime?                 // bloqueo temporal de 5 min (se conserva al vencer: marca que ya hubo uno)
+  loginLocked  Boolean   @default(false) // bloqueo hasta crear una nueva contraseña
   createdAt    DateTime  @default(now())
   sessions     Session[]
   projects     Project[]

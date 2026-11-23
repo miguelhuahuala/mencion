@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { endSession, hashPassword, isAdminEmail, startSession, verifyPassword } from "@/lib/auth";
+import { MSG, UNLOCKED, afterFailure, blockedMessage } from "@/lib/login-lock";
 import { activate, checkVerificationCode, sendVerificationEmail, verificationRequired } from "@/lib/verification";
 
 const back = (path: string, error: string, email?: string, form?: FormData) => {
@@ -63,9 +64,20 @@ export async function signIn(form: FormData) {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");
   const user = email ? await db.user.findUnique({ where: { email } }) : null;
-  // Mismo mensaje en ambos casos para no revelar qué correos están registrados
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return back("/ingresar", "Correo o contraseña incorrectos", email, form);
+  if (!user) return back("/ingresar", MSG.wrong, email, form);
+
+  // Cuenta bloqueada (5 min o hasta crear una nueva contraseña): no se evalúa la contraseña
+  const blocked = blockedMessage(user);
+  if (blocked) return back("/ingresar", blocked, email, form);
+
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    const { data, message } = afterFailure(user);
+    await db.user.update({ where: { id: user.id }, data });
+    return back("/ingresar", message, email, form);
+  }
+  // Contraseña correcta: se reinician los intentos
+  if (user.failedLogins || user.lockedUntil || user.loginLocked) {
+    await db.user.update({ where: { id: user.id }, data: UNLOCKED });
   }
   if (!user.emailVerifiedAt) {
     // Si no tiene un código vigente (p. ej. cuentas creadas cuando se usaba enlace), se le envía uno ahora

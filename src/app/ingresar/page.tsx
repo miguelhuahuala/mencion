@@ -26,11 +26,6 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         </label>
         <SubmitButton pendingText="Ingresando…">Ingresar</SubmitButton>
       </form>
-      {attempt >= 2 && (
-        <p className="mt-3 rounded-lg bg-surface px-3 py-2 text-center text-sm">
-          ¿No recuerdas tu contraseña? <Link href={`/recuperar${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-semibold text-accent underline">Te enviamos un código para crear una nueva</Link>
-        </p>
-      )}
       <p className="mt-3 text-center text-sm">
         <Link href="/recuperar" className="text-muted underline hover:text-ink">¿Olvidaste tu contraseña?</Link>
       </p>
