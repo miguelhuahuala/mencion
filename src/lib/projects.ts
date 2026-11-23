@@ -7,6 +7,23 @@ import { parseJson, type Competitor } from "./types";
  */
 export const PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"];
 export const OTHER_COLOR = "#8a8a8a";
+
+/** Únicos colores que se pueden elegir (la paleta validada + gris para marcas secundarias). */
+export const PALETTE_OPTIONS: { hex: string; name: string }[] = [
+  { hex: "#2a78d6", name: "Azul" },
+  { hex: "#eb6834", name: "Naranja" },
+  { hex: "#1baf7a", name: "Verde agua" },
+  { hex: "#eda100", name: "Amarillo" },
+  { hex: "#e87ba4", name: "Rosado" },
+  { hex: "#008300", name: "Verde" },
+  { hex: "#6250d6", name: "Violeta" },
+  { hex: "#e34948", name: "Rojo" },
+  { hex: OTHER_COLOR, name: "Gris" },
+];
+
+export function isPaletteColor(v: unknown): v is string {
+  return typeof v === "string" && PALETTE_OPTIONS.some((p) => p.hex === v.toLowerCase());
+}
 export const MAX_COMPETITORS = 10;
 
 export const defaultCompetitorColor = (i: number) => PALETTE[i + 1] ?? OTHER_COLOR;
@@ -16,11 +33,11 @@ export function isHexColor(v: unknown): v is string {
 }
 
 export function ownBrand(p: Project): Competitor {
-  return { name: p.name, domain: p.domain, aliases: parseJson<string[]>(p.aliases, []), color: isHexColor(p.color) ? p.color : PALETTE[0] };
+  return { name: p.name, domain: p.domain, aliases: parseJson<string[]>(p.aliases, []), color: isPaletteColor(p.color) ? p.color.toLowerCase() : PALETTE[0] };
 }
 
 export function competitorsOf(p: Project): Competitor[] {
-  return parseJson<Competitor[]>(p.competitors, []).map((c, i) => ({ ...c, color: isHexColor(c.color) ? c.color : defaultCompetitorColor(i) }));
+  return parseJson<Competitor[]>(p.competitors, []).map((c, i) => ({ ...c, color: isPaletteColor(c.color) ? c.color.toLowerCase() : defaultCompetitorColor(i) }));
 }
 
 export function cleanDomain(raw: string) {
@@ -38,7 +55,7 @@ export function competitorsFromForm(form: FormData): Competitor[] {
       name: name.trim().slice(0, 80),
       domain: cleanDomain(domains[i] ?? "").slice(0, 120),
       aliases: (aliases[i] ?? "").split(",").map((a) => a.trim()).filter(Boolean).slice(0, 10),
-      color: isHexColor(colors[i]) ? colors[i].toLowerCase() : defaultCompetitorColor(i),
+      color: isPaletteColor(colors[i]) ? colors[i].toLowerCase() : defaultCompetitorColor(i),
     }))
     .filter((c) => c.name)
     .slice(0, MAX_COMPETITORS);

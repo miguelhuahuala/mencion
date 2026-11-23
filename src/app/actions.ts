@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { startRun } from "@/lib/runner";
-import { PALETTE, cleanDomain, competitorsFromForm, isHexColor } from "@/lib/projects";
+import { PALETTE, cleanDomain, competitorsFromForm, isPaletteColor } from "@/lib/projects";
 import { requireUser } from "@/lib/auth";
 import { findProjectFor, limitsFor, runAvailability } from "@/lib/limits";
 import { dateTime } from "@/lib/format";
@@ -35,7 +35,7 @@ function read(form: FormData, maxPrompts: number, errorPath: string) {
     name: d.name,
     domain: cleanDomain(d.domain),
     aliases: JSON.stringify(d.aliases.split(",").map((a) => a.trim()).filter(Boolean)),
-    color: isHexColor(form.get("color")) ? String(form.get("color")).toLowerCase() : PALETTE[0],
+    color: isPaletteColor(form.get("color")) ? String(form.get("color")).toLowerCase() : PALETTE[0],
     competitors: JSON.stringify(competitorsFromForm(form)),
     country: d.country.toUpperCase(),
     language: d.language.toLowerCase(),

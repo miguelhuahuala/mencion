@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ColorPicker, type PaletteColor } from "./ColorPicker";
 
 type Row = { key: number; name: string; domain: string; aliases: string; color: string };
 
@@ -12,13 +13,16 @@ export function CompetitorRows({
   palette,
   otherColor,
   max,
+  brandColor,
 }: {
   initial: { name: string; domain: string; aliases: string[]; color: string }[];
-  palette: string[];
+  palette: PaletteColor[];
   otherColor: string;
   max: number;
+  brandColor: string;
 }) {
-  const colorFor = (i: number) => palette[i + 1] ?? otherColor;
+  const hexes = palette.map((p) => p.hex).filter((h) => h !== otherColor);
+  const colorFor = (i: number) => hexes[i + 1] ?? otherColor;
   const [rows, setRows] = useState<Row[]>(() =>
     (initial.length ? initial : [{ name: "", domain: "", aliases: [], color: colorFor(0) }]).map((c, i) => ({
       key: i,
@@ -35,8 +39,8 @@ export function CompetitorRows({
   const add = () => {
     setRows((rs) => {
       // Primer color de la paleta que no esté en uso
-      const used = new Set(rs.map((r) => r.color.toLowerCase()));
-      const color = palette.slice(1).find((c) => !used.has(c.toLowerCase())) ?? otherColor;
+      const used = new Set([brandColor, ...rs.map((r) => r.color)].map((c) => c.toLowerCase()));
+      const color = hexes.find((c) => !used.has(c.toLowerCase())) ?? otherColor;
       return [...rs, { key: nextKey, name: "", domain: "", aliases: "", color }];
     });
     setNextKey((k) => k + 1);
@@ -53,13 +57,13 @@ export function CompetitorRows({
       </div>
       {rows.map((r, i) => (
         <div key={r.key} className="grid grid-cols-[2.5rem_1fr_2rem] items-center gap-2 sm:grid-cols-[2.5rem_1fr_1fr_1fr_2rem]">
-          <input
-            type="color"
+          <ColorPicker
             name="comp_color"
             value={r.color}
-            onChange={(e) => update(r.key, { color: e.target.value })}
-            aria-label={`Color del competidor ${i + 1}`}
-            className="h-10 w-10 cursor-pointer rounded-lg border border-line bg-white p-1"
+            onChange={(hex) => update(r.key, { color: hex })}
+            palette={palette}
+            label={`Color del competidor ${i + 1}`}
+            taken={[brandColor, ...rows.filter((x) => x.key !== r.key).map((x) => x.color)]}
           />
           <input
             name="comp_name"

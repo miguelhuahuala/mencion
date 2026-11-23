@@ -1,5 +1,6 @@
 import type { Project, Prompt } from "@/generated/prisma/client";
-import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, competitorsOf, ownBrand } from "@/lib/projects";
+import { MAX_COMPETITORS, OTHER_COLOR, PALETTE, PALETTE_OPTIONS, competitorsOf, ownBrand } from "@/lib/projects";
+import { ColorPicker } from "./ColorPicker";
 import { CompetitorRows } from "./CompetitorRows";
 import { PromptRows } from "./PromptRows";
 import { parseJson } from "@/lib/types";
@@ -19,18 +20,19 @@ export function ProjectForm({
   submitLabel: string;
   maxPrompts: number;
 }) {
+  const brandColor = project ? ownBrand(project).color! : PALETTE[0];
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
       {project ? <input type="hidden" name="id" value={project.id} /> : null}
       <div className="label">
         Marca y su color en los gráficos
         <div className="mt-1 flex gap-2">
-          <input
-            type="color"
+          <ColorPicker
             name="color"
-            defaultValue={project ? ownBrand(project).color : PALETTE[0]}
-            aria-label="Color de tu marca"
-            className="h-10 w-10 shrink-0 cursor-pointer rounded-lg border border-line bg-white p-1"
+            value={brandColor}
+            palette={PALETTE_OPTIONS}
+            label="Color de tu marca"
+            taken={project ? competitorsOf(project).map((c) => c.color!) : []}
           />
           <input name="name" required maxLength={80} defaultValue={project?.name} placeholder="BCP" aria-label="Marca" className="input font-normal normal-case tracking-normal" />
         </div>
@@ -69,9 +71,10 @@ export function ProjectForm({
         <legend className="label mb-2">Competidores y su color en los gráficos (hasta {MAX_COMPETITORS})</legend>
         <CompetitorRows
           initial={project ? competitorsOf(project).map((c) => ({ name: c.name, domain: c.domain, aliases: c.aliases, color: c.color! })) : []}
-          palette={PALETTE}
+          palette={PALETTE_OPTIONS}
           otherColor={OTHER_COLOR}
           max={MAX_COMPETITORS}
+          brandColor={brandColor}
         />
       </fieldset>
       <fieldset className="sm:col-span-2">
