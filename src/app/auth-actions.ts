@@ -65,6 +65,19 @@ export async function signIn(form: FormData) {
     return back("/ingresar", "Correo o contraseña incorrectos", email);
   }
   if (!user.emailVerifiedAt) {
+    // Si no tiene un código vigente (p. ej. cuentas creadas cuando se usaba enlace), se le envía uno ahora
+    const active = await db.emailVerification.findFirst({
+      where: { userId: user.id, usedAt: null, codeHash: { not: "" }, expiresAt: { gt: new Date() }, attempts: { lt: 5 } },
+    });
+    if (!active) {
+      try {
+        await sendVerificationEmail(user);
+      } catch (e) {
+        console.error("[menciones] no se pudo enviar el código al ingresar:", e);
+        return pending(user.email, { error: "Debes confirmar tu correo, pero no pudimos enviarte el código. Pulsa “Enviar código nuevo”." });
+      }
+      return pending(user.email, { enviado: "1" });
+    }
     return pending(user.email, { error: "Antes de ingresar confirma tu correo con el código que te enviamos." });
   }
   if (isAdminEmail(user.email) && user.role !== "admin") {
