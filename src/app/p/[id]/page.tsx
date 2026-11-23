@@ -5,7 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { findProjectFor, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
-import { canAnalyzeSentiment } from "@/lib/analysis";
+import { METRIC_INFO } from "@/lib/metrics";
 import { dateTime, usd } from "@/lib/format";
 import { ENGINE_LABEL } from "@/lib/types";
 import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
@@ -113,10 +113,10 @@ export default async function ProjectPage({
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi label="Visibilidad" value={`${kpis.visibility}%`} hint={`de ${kpis.answers} respuestas te mencionan`} />
-            <Kpi label="Share of voice" value={`${kpis.share}%`} hint="de las menciones de marcas" />
-            <Kpi label="Posición media" value={kpis.avgPosition ? `#${kpis.avgPosition.toFixed(1)}` : "—"} hint="entre las marcas citadas" />
-            <Kpi label="Citado como fuente" value={kpis.citedIn} hint="respuestas enlazan tu dominio" />
+            <Kpi label="Visibilidad" value={`${kpis.visibility}%`} hint={`de ${kpis.answers} respuestas te mencionan`} info={METRIC_INFO.visibility} />
+            <Kpi label="Share of voice" value={`${kpis.share}%`} hint="de las menciones de marcas" info={METRIC_INFO.share} />
+            <Kpi label="Posición media" value={kpis.avgPosition ? `#${kpis.avgPosition.toFixed(1)}` : "—"} hint="entre las marcas citadas" info={METRIC_INFO.position} />
+            <Kpi label="Citado como fuente" value={kpis.citedIn} hint="respuestas enlazan tu dominio" info={METRIC_INFO.cited} />
           </div>
           {user?.role === "admin" && (
             <p className="-mt-2 text-xs text-muted">
@@ -154,7 +154,6 @@ export default async function ProjectPage({
           <Section
             title="Tú vs. competencia"
             desc="Menciones en la última corrida"
-            aside={!hasSentiment && !canAnalyzeSentiment() ? <span className="text-xs text-muted">Sentimiento: agrega ANTHROPIC_API_KEY</span> : undefined}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

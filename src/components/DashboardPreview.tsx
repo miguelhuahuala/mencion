@@ -1,5 +1,7 @@
 import { ENGINE_LABEL, ENGINES } from "@/lib/types";
 import { Bar, TrendLine } from "./ui";
+import { InfoTip } from "./InfoTip";
+import { METRIC_INFO } from "@/lib/metrics";
 import { EngineLogo } from "./EngineLogo";
 
 /**
@@ -34,13 +36,13 @@ export function DashboardPreview() {
         <div className="space-y-3 p-3 sm:p-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 [&>*]:min-w-0">
             {[
-              ["Visibilidad", "64%", "+26 pts en 10 semanas"],
-              ["Share of voice", "31%", "vs. 34% del líder"],
-              ["Posición media", "#1.8", "entre marcas citadas"],
-              ["Citado como fuente", "14", "respuestas enlazan tu web"],
-            ].map(([l, v, h]) => (
+              ["Visibilidad", "64%", "+26 pts en 10 semanas", METRIC_INFO.visibility],
+              ["Share of voice", "31%", "vs. 34% del líder", METRIC_INFO.share],
+              ["Posición media", "#1.8", "entre marcas citadas", METRIC_INFO.position],
+              ["Citado como fuente", "14", "respuestas enlazan tu web", METRIC_INFO.cited],
+            ].map(([l, v, h, info]) => (
               <div key={l} className="card p-3">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-muted">{l}</div>
+                <div className="flex items-center text-[10px] font-semibold uppercase tracking-wide text-muted">{l}<InfoTip text={info} label={l} /></div>
                 <div className="mt-0.5 font-mono text-xl font-semibold tabular-nums sm:text-2xl">{v}</div>
                 <div className="text-[11px] text-muted">{h}</div>
               </div>

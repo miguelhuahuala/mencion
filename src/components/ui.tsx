@@ -1,11 +1,12 @@
 import type { Engine, Sentiment } from "@/lib/types";
 import { ENGINE_LABEL } from "@/lib/types";
 import { EngineLogo } from "./EngineLogo";
+import { InfoTip } from "./InfoTip";
 
-export function Kpi({ label, value, hint }: { label: string; value: React.ReactNode; hint?: React.ReactNode }) {
+export function Kpi({ label, value, hint, info }: { label: string; value: React.ReactNode; hint?: React.ReactNode; info?: string }) {
   return (
     <div className="card p-4">
-      <div className="label">{label}</div>
+      <div className="label flex items-center">{label}{info ? <InfoTip text={info} label={label} /> : null}</div>
       <div className="kpi-num mt-1">{value}</div>
       {hint ? <div className="mt-1 text-xs text-muted">{hint}</div> : null}
     </div>
