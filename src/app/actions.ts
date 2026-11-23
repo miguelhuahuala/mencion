@@ -118,11 +118,11 @@ export async function deleteProject(form: FormData) {
 }
 
 /** "Sugerir prompts" desde el formulario del proyecto. Devuelve datos (no redirige). */
-export async function suggestPromptsAction(input: { topic: string; country: string; language: string; brands: string[] }) {
+export async function suggestPromptsAction(input: { topics: string; country: string; language: string; brands: string[] }) {
   const user = await requireUser();
   const parsed = z
     .object({
-      topic: z.string().max(200),
+      topics: z.string().max(300),
       country: z.string().trim().length(2),
       language: z.string().trim().min(2).max(5),
       brands: z.array(z.string().max(200)).max(60),
