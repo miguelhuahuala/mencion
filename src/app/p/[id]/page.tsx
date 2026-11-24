@@ -13,6 +13,7 @@ import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
 import { runNow } from "../../actions";
 import { AutoRefresh } from "./AutoRefresh";
 import { BrandTrendChart } from "@/components/BrandTrendChart";
+import { Hint } from "@/components/InfoTip";
 
 export const dynamic = "force-dynamic";
 
@@ -259,9 +260,9 @@ export default async function ProjectPage({
                         const own = r?.hits.find((h) => h.own);
                         // Sin respuesta: el prompt se agregó después de la última medición
                         let cell: React.ReactNode = (
-                          <span title="Se mostrará en la próxima medición" className="chip cursor-help border border-dashed border-line text-muted">
-                            pendiente
-                          </span>
+                          <Hint text="Se mostrará en la próxima medición.">
+                            <span className="chip border border-dashed border-line text-muted">pendiente</span>
+                          </Hint>
                         );
                         if (r?.error) cell = <span className="chip bg-bad-soft text-bad">error</span>;
                         else if (own?.mentioned) cell = <span className="chip bg-good-soft font-mono text-good">#{own.position}</span>;
