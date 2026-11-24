@@ -24,7 +24,7 @@ export function Kpi({
       <div className="label flex items-center">
         {label}
         {info ? <InfoTip text={info} label={label} /> : null}
-        {badge ? <span className="chip ml-auto bg-accent-soft text-[10px] normal-case tracking-normal text-accent">{badge}</span> : null}
+        {badge ? <span className="chip ml-auto bg-accent text-[10px] font-semibold normal-case tracking-normal text-white">{badge}</span> : null}
       </div>
       <div className="kpi-num mt-1">{value}</div>
       {hint ? <div className="mt-1 text-xs text-muted">{hint}</div> : null}

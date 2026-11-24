@@ -169,7 +169,7 @@ export default async function ProjectPage({
                 label="Sentiment"
                 badge="Nuevo"
                 info={METRIC_INFO.sentiment}
-                className="col-span-2 lg:col-span-1"
+                className="col-span-2 border-accent/40! bg-accent-soft! lg:col-span-1"
                 value={ownSent.total ? `${Math.round((ownSent.positive / ownSent.total) * 100)}%` : "—"}
                 hint={
                   ownSent.total ? (
