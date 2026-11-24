@@ -259,7 +259,7 @@ export default async function ProjectPage({
                         const own = r?.hits.find((h) => h.own);
                         // Sin respuesta: el prompt se agregó después de la última medición
                         let cell: React.ReactNode = (
-                          <span title="Se medirá en la próxima medición" className="chip cursor-help border border-dashed border-line text-muted">
+                          <span title="Se mostrará en la próxima medición" className="chip cursor-help border border-dashed border-line text-muted">
                             pendiente
                           </span>
                         );
