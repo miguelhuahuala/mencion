@@ -6,6 +6,7 @@ import { PromptRows } from "./PromptRows";
 import { tagsOf } from "@/lib/tags";
 import { parseJson } from "@/lib/types";
 import { COUNTRIES } from "@/lib/locale";
+import { InfoTip } from "./InfoTip";
 
 
 export function ProjectForm({
@@ -28,10 +29,10 @@ export function ProjectForm({
   const field = "input mt-1.5 font-normal normal-case tracking-normal";
   const fieldLabel = "block text-sm font-medium text-ink";
   return (
-    <form action={action} className="divide-y divide-line">
+    <form action={action}>
       {project ? <input type="hidden" name="id" value={project.id} /> : null}
 
-      <Step n={1} title="Tu marca" desc="Cómo te reconocemos en las respuestas de la IA. El color se usa en los gráficos.">
+      <Step n={1} title="Tu marca" desc="Cómo te reconoce la IA en sus respuestas." info="El color de tu marca se usa en los gráficos. Las otras formas de escribirla ayudan a detectarla aunque la IA no use el nombre exacto.">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <span className={fieldLabel}>Marca</span>
@@ -57,7 +58,12 @@ export function ProjectForm({
         </div>
       </Step>
 
-      <Step n={2} title="Mercado" desc="Preguntamos como lo haría una persona de ese país, para ver las marcas que la IA recomienda a tus clientes.">
+      <Step
+        n={2}
+        title="Mercado"
+        desc="Preguntamos como lo haría tu cliente en ese país."
+        info="Respuestas localizadas: ChatGPT responde con esa ubicación, y a Claude, Gemini y Perplexity les indicamos el país y el idioma."
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className={fieldLabel}>
             País de tus clientes
@@ -74,16 +80,14 @@ export function ProjectForm({
             </select>
           </label>
         </div>
-        <p className="mt-3 flex gap-2 text-xs text-muted">
-          <span aria-hidden>📍</span>
-          <span>
-            <strong className="font-semibold text-ink">Respuestas localizadas:</strong> ChatGPT responde con esa ubicación, y a Claude, Gemini y
-            Perplexity les indicamos el país y el idioma.
-          </span>
-        </p>
       </Step>
 
-      <Step n={3} title="Competidores" desc={`Hasta ${MAX_COMPETITORS} marcas con las que te comparas. Cada una con su color en los gráficos.`}>
+      <Step
+        n={3}
+        title="Competidores"
+        desc="Las marcas con las que te quieres comparar."
+        info={`Hasta ${MAX_COMPETITORS} competidores. Cada uno tiene su color en los gráficos.`}
+      >
         <CompetitorRows
           initial={project ? competitorsOf(project).map((c) => ({ name: c.name, domain: c.domain, aliases: c.aliases, color: c.color! })) : []}
           palette={PALETTE_OPTIONS}
@@ -96,12 +100,13 @@ export function ProjectForm({
       <Step
         n={4}
         title="Prompts a seguir"
-        desc={`Hasta ${maxPrompts}. Una pregunta completa por casilla, como la haría tu cliente. La etiqueta (p. ej. el producto) sirve para filtrar el panel.`}
+        desc="Las preguntas que tus clientes le hacen a la IA."
+        info={`Hasta ${maxPrompts} prompts. Escribe una pregunta completa por casilla, como la haría tu cliente. La etiqueta (p. ej. el producto) sirve para filtrar el panel.`}
       >
         <PromptRows initial={prompts?.filter((p) => p.active).map((p) => ({ text: p.text, tags: tagsOf(p) })) ?? []} max={maxPrompts} suggestLeft={suggestLeft} />
       </Step>
 
-      <div className="flex flex-wrap items-center gap-3 pt-6">
+      <div className="flex flex-wrap items-center gap-3 pt-6 pl-10 sm:pl-11">
         <button className="btn-primary">{submitLabel}</button>
         <span className="text-xs text-muted">Cada medición consulta cada prompt en ChatGPT, Claude, Gemini y Perplexity.</span>
       </div>
@@ -109,18 +114,34 @@ export function ProjectForm({
   );
 }
 
-/** Un paso del formulario: título y explicación a la izquierda, campos a la derecha (apilado en móvil). */
-function Step({ n, title, desc, children }: { n: number; title: string; desc: string; children: React.ReactNode }) {
+/** Un paso del recorrido: número unido al siguiente por una línea vertical, título, una frase y los campos. */
+function Step({
+  n,
+  title,
+  desc,
+  info,
+  children,
+}: {
+  n: number;
+  title: string;
+  desc: string;
+  info?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="grid gap-4 py-6 first:pt-0 md:grid-cols-[13rem_1fr] md:gap-8">
-      <div>
-        <h3 className="flex items-center gap-2 font-semibold text-ink">
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft font-mono text-xs text-accent">{n}</span>
-          {title}
-        </h3>
-        <p className="mt-1 text-xs leading-relaxed text-muted">{desc}</p>
+    <section className="group flex gap-3 sm:gap-4">
+      <div className="flex flex-col items-center">
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-white">{n}</span>
+        <span aria-hidden className="mt-2 w-0.5 flex-1 rounded-full bg-accent/20 group-last-of-type:hidden" />
       </div>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 flex-1 pb-9 group-last-of-type:pb-2">
+        <h3 className="flex items-center pt-0.5 font-semibold text-ink">
+          {title}
+          {info ? <InfoTip label={title} text={info} /> : null}
+        </h3>
+        <p className="mt-0.5 text-sm text-muted">{desc}</p>
+        <div className="mt-4">{children}</div>
+      </div>
     </section>
   );
 }

@@ -27,6 +27,7 @@ export function PromptRows({
     (initial.length ? initial : [{ text: "", tags: [] }]).map((p, key) => ({ key, text: p.text, tags: p.tags.join(", ") })),
   );
   const [nextKey, setNextKey] = useState(rows.length);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const listId = useId();
   const examples = ["¿Cuál es el mejor banco del Perú?", "¿Qué banco tiene la mejor app móvil en Perú?"];
   const update = (key: number, patch: Partial<Row>) => setRows((rs) => rs.map((x) => (x.key === key ? { ...x, ...patch } : x)));
@@ -87,21 +88,33 @@ export function PromptRows({
           </button>
         </div>
       ))}
-      {rows.length < max ? (
-        <button
-          type="button"
-          onClick={() => {
-            setRows((rs) => [...rs, { key: nextKey, text: "", tags: "" }]);
-            setNextKey((k) => k + 1);
-          }}
-          className="btn-ghost px-3 py-1.5 text-xs"
-        >
-          + Agregar prompt
-        </button>
-      ) : (
-        <p className="text-xs text-muted">Llegaste al máximo de {max} prompts de tu plan.</p>
-      )}
-      {suggestLeft !== undefined && (
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {rows.length < max ? (
+          <button
+            type="button"
+            onClick={() => {
+              setRows((rs) => [...rs, { key: nextKey, text: "", tags: "" }]);
+              setNextKey((k) => k + 1);
+            }}
+            className="btn-ghost px-3 py-1.5 text-xs"
+          >
+            + Agregar prompt
+          </button>
+        ) : (
+          <p className="text-xs text-muted">Llegaste al máximo de {max} prompts de tu plan.</p>
+        )}
+        {suggestLeft !== undefined && (
+          <button
+            type="button"
+            onClick={() => setSuggestOpen((o) => !o)}
+            aria-expanded={suggestOpen}
+            className="text-left text-sm font-medium text-accent hover:underline"
+          >
+            ✨ ¿No sabes cuáles? Identifica los más recurrentes
+          </button>
+        )}
+      </div>
+      {suggestLeft !== undefined && suggestOpen && (
         <SuggestPanel
           left={suggestLeft}
           canAdd={filled < max}
@@ -158,9 +171,8 @@ function SuggestPanel({
   const outOfSearches = left !== null && left <= 0;
   const label = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
   return (
-    <div ref={ref} className="mt-2 rounded-xl border border-dashed border-line bg-white p-3 sm:p-4">
-      <p className="text-sm font-semibold text-ink">¿No sabes qué prompts usan tus clientes? Identifica los más recurrentes</p>
-      <p className="mt-0.5 text-xs text-muted">
+    <div ref={ref} className="rounded-xl border border-dashed border-line bg-white p-3 sm:p-4">
+      <p className="text-xs text-muted">
         Escribe hasta 3 productos, categorías o tipos de negocio, separados por comas. Te mostramos hasta 5 de las preguntas más buscadas
         sobre cada uno en el país elegido, sin marcas.
       </p>
