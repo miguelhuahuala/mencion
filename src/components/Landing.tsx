@@ -66,7 +66,7 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
             Antes de comprarte, tus clientes le preguntan a la IA.
           </h1>
           <p className="mt-5 text-lg text-muted text-pretty">
-            Mide si ChatGPT, Claude, Gemini y Perplexity te recomiendan, en qué posición y frente a tu competencia.
+            Descubre si ChatGPT, Claude, Gemini y Perplexity te recomiendan, en qué posición te ubican y cómo te comparan con tu competencia.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/registro" className="btn-primary px-5 py-2.5 text-base">Empieza gratis</Link>

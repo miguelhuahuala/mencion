@@ -41,12 +41,16 @@ export async function startRun(projectId: string, engines: readonly Engine[] = E
       try {
         const answer = await askEngine(engine, prompt.text, { country: project.country, language: project.language });
         let hits = detectMentions(answer.text, answer.sources, own, competitors);
+        let sentimentCost = 0;
         try {
-          hits = await addSentiment(prompt.text, answer.text, hits);
+          const s = await addSentiment(prompt.text, answer.text, hits);
+          hits = s.hits;
+          sentimentCost = s.costUsd;
         } catch (e) {
           console.error("[mencion] sentimiento falló:", e);
         }
-        cost += answer.costUsd;
+        const responseCost = answer.costUsd + sentimentCost;
+        cost += responseCost;
         await db.response.create({
           data: {
             runId: run.id,
@@ -56,7 +60,7 @@ export async function startRun(projectId: string, engines: readonly Engine[] = E
             text: answer.text,
             sources: JSON.stringify(answer.sources),
             mentions: JSON.stringify(hits),
-            costUsd: answer.costUsd,
+            costUsd: responseCost,
           },
         });
       } catch (e) {

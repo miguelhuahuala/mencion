@@ -73,20 +73,24 @@ export function canAnalyzeSentiment() {
 
 let client: Anthropic | null = null;
 
+// Claude Haiku 5.5: suficiente para clasificar y mucho más barato. Precio por token (prompts de hasta 100K).
+const SENTIMENT_MODEL = "claude-haiku-5-5";
+const USD_PER_INPUT_TOKEN = 0.1 / 1_000_000;
+const USD_PER_OUTPUT_TOKEN = 0.5 / 1_000_000;
+
 /**
- * Clasifica con Claude cómo habla la respuesta de cada marca mencionada.
- * Opcional: sin ANTHROPIC_API_KEY las menciones quedan con sentiment = null.
+ * Clasifica con Claude cómo habla la respuesta de cada marca mencionada y devuelve el costo de la llamada
+ * (se suma al de la medición, así cuenta en el tope mensual).
+ * Opcional: sin ANTHROPIC_API_KEY las menciones quedan con sentiment = null y el costo es 0.
  */
-export async function addSentiment(prompt: string, answer: string, hits: BrandHit[]): Promise<BrandHit[]> {
+export async function addSentiment(prompt: string, answer: string, hits: BrandHit[]): Promise<{ hits: BrandHit[]; costUsd: number }> {
   const mentioned = hits.filter((h) => h.mentioned).map((h) => h.brand);
-  if (!mentioned.length || !canAnalyzeSentiment()) return hits;
+  if (!mentioned.length || !canAnalyzeSentiment()) return { hits, costUsd: 0 };
   client ??= new Anthropic();
 
-  const response = await client.beta.messages.parse({
-    model: "claude-opus-5-5",
+  const response = await client.messages.parse({
+    model: SENTIMENT_MODEL,
     max_tokens: 2000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
     output_config: { effort: "low", format: zodOutputFormat(SentimentSchema) },
     system:
       "Eres analista de reputación de marca. Recibes una pregunta de usuario y la respuesta que dio un asistente de IA. " +
@@ -100,7 +104,9 @@ export async function addSentiment(prompt: string, answer: string, hits: BrandHi
     ],
   });
 
-  if (response.stop_reason === "refusal" || !response.parsed_output) return hits;
+  // El razonamiento interno se cobra como salida y ya viene incluido en output_tokens
+  const costUsd = response.usage.input_tokens * USD_PER_INPUT_TOKEN + response.usage.output_tokens * USD_PER_OUTPUT_TOKEN;
+  if (response.stop_reason === "refusal" || !response.parsed_output) return { hits, costUsd };
   const byBrand = new Map<string, Sentiment>(response.parsed_output.brands.map((b) => [norm(b.brand), b.sentiment]));
-  return hits.map((h) => (h.mentioned ? { ...h, sentiment: byBrand.get(norm(h.brand)) ?? null } : h));
+  return { hits: hits.map((h) => (h.mentioned ? { ...h, sentiment: byBrand.get(norm(h.brand)) ?? null } : h)), costUsd };
 }
