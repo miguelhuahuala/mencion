@@ -257,7 +257,12 @@ export default async function ProjectPage({
                       {engines.map((e) => {
                         const r = d.responses.find((x) => x.promptId === p.id && x.engine === e);
                         const own = r?.hits.find((h) => h.own);
-                        let cell: React.ReactNode = <span className="text-muted">·</span>;
+                        // Sin respuesta: el prompt se agregó después de la última medición
+                        let cell: React.ReactNode = (
+                          <span title="Se medirá en la próxima medición" className="chip cursor-help border border-dashed border-line text-muted">
+                            pendiente
+                          </span>
+                        );
                         if (r?.error) cell = <span className="chip bg-bad-soft text-bad">error</span>;
                         else if (own?.mentioned) cell = <span className="chip bg-good-soft font-mono text-good">#{own.position}</span>;
                         else if (r) cell = <span className="chip bg-surface text-muted">no</span>;
