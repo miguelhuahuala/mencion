@@ -61,20 +61,18 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
       {/* Hero */}
       <section className="grid grid-cols-1 items-center gap-12 pt-6 lg:grid-cols-[1fr_1.15fr] [&>*]:min-w-0">
         <div>
-          <p className="chip bg-accent-soft text-accent">Visibilidad en IA</p>
+          <p className="chip bg-accent-soft text-accent">GEO · Visibilidad en IA</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            ¿Las IAs recomiendan tu marca… o la de tu competencia?
+            Antes de comprarte, tus clientes le preguntan a la IA.
           </h1>
-          <p className="mt-5 text-lg text-muted text-pretty">Muchos usuarios ya le preguntan a ChatGPT antes que a Google.</p>
-          <p className="mt-2 text-lg text-muted text-pretty">
-            Menciones mide cuántas veces te mencionan ChatGPT, Claude, Gemini y Perplexity, en qué posición y con qué fuentes,
-            frente a tu competencia.
+          <p className="mt-5 text-lg text-muted text-pretty">
+            Mide si ChatGPT, Claude, Gemini y Perplexity te recomiendan, en qué posición y frente a tu competencia.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/registro" className="btn-primary px-5 py-2.5 text-base">Empieza gratis</Link>
             <a href="#como-funciona" className="btn-ghost px-5 py-2.5 text-base">Cómo funciona</a>
           </div>
-          <p className="mt-3 text-sm text-muted">Sin tarjeta y sin instalar nada. Funciona en el navegador.</p>
+          <p className="mt-3 text-sm text-muted">Gratis, sin tarjeta y sin instalar nada.</p>
         </div>
         <DashboardPreview />
       </section>
