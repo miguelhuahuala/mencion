@@ -2,12 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
-import { findProjectFor, runAvailability } from "@/lib/limits";
+import { findProjectFor, freeLimits, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
 import { METRIC_INFO } from "@/lib/metrics";
 import { hasTag, tagsOf } from "@/lib/tags";
-import { dateTime, usd } from "@/lib/format";
+import { dateShort, dateTime, usd } from "@/lib/format";
 import { ENGINE_LABEL } from "@/lib/types";
 import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
 import { runNow } from "../../actions";
@@ -42,6 +42,8 @@ export default async function ProjectPage({
   const hasSentiment = d.shareOfVoice.some((s) => s.positive + s.neutral + s.negative > 0);
   const avail = project.isDemo || d.running ? null : await runAvailability(id, user);
   const blocked = avail && !avail.ok ? avail : null;
+  // La medición automática es semanal para todos los proyectos (ver runScheduled)
+  const nextAuto = d.latest ? new Date(d.latest.startedAt.getTime() + freeLimits().intervalDays * 86400_000) : null;
 
   return (
     <div className="space-y-6">
@@ -53,9 +55,20 @@ export default async function ProjectPage({
           <Link href="/" className="text-sm text-muted hover:text-ink">← Proyectos</Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{project.name}</h1>
           <p className="text-sm text-muted">
-            {project.domain || "sin dominio"} · {project.country} · {activePrompts.length} {activePrompts.length === 1 ? "prompt" : "prompts"} ·{" "}
-            {d.latest ? `última corrida ${dateTime(d.latest.startedAt)}` : "sin corridas todavía"}
+            {project.domain || "sin dominio"} · {project.country} · {activePrompts.length} {activePrompts.length === 1 ? "prompt" : "prompts"}
           </p>
+          {!project.isDemo && (
+            <p className="mt-1 text-sm text-muted">
+              {d.latest ? (
+                <>
+                  Última medición: <strong className="font-medium text-ink">{dateTime(d.latest.startedAt)}</strong>
+                  {nextAuto && <> · Próxima automática: <strong className="font-medium text-ink">desde el {dateShort(nextAuto)}</strong></>}
+                </>
+              ) : (
+                "Sin mediciones todavía"
+              )}
+            </p>
+          )}
         </div>
         {!project.isDemo && (
           <div className="flex gap-2">

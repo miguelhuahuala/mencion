@@ -30,9 +30,12 @@ export async function monthlyBudget() {
   return { cap, spent, exhausted: cap > 0 && spent >= cap };
 }
 
-/** ¿Puede este usuario lanzar una medición del proyecto ahora? */
-export async function runAvailability(projectId: string, user: { role: string } | null) {
-  const { intervalDays } = limitsFor(user);
+/**
+ * ¿Se puede lanzar una medición del proyecto ahora?
+ * Manual: según el plan (admin sin espera). Programada (cron): semanal para todos y siempre dentro del tope mensual.
+ */
+export async function runAvailability(projectId: string, user: { role: string } | null, { scheduled = false } = {}) {
+  const { intervalDays } = scheduled ? freeLimits() : limitsFor(user);
   if (intervalDays > 0) {
     const last = await db.run.findFirst({
       where: { projectId, status: { in: ["done", "running"] } },
@@ -43,7 +46,7 @@ export async function runAvailability(projectId: string, user: { role: string } 
       if (nextAt > new Date()) return { ok: false as const, reason: "interval" as const, nextAt };
     }
   }
-  if (user?.role !== "admin" && (await monthlyBudget()).exhausted) {
+  if ((scheduled || user?.role !== "admin") && (await monthlyBudget()).exhausted) {
     return { ok: false as const, reason: "budget" as const, nextAt: null };
   }
   return { ok: true as const };

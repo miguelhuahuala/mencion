@@ -8,7 +8,16 @@ const W = 720;
 const H = 260;
 const PAD = { top: 16, right: 16, bottom: 28, left: 40 };
 
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
+// Hora de Perú fija: así coinciden el servidor (UTC) y el navegador, y todos ven la misma fecha
+const TZ = "America/Lima";
+const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", timeZone: TZ });
+const fmtDateTime = (iso: string) =>
+  new Date(iso).toLocaleString("es-PE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: TZ });
+/** Etiqueta de cada medición: solo la fecha, o fecha y hora si ese día hubo más de una. */
+function pointLabels(dates: string[]) {
+  const days = dates.map(fmtDate);
+  return dates.map((iso, i) => (days.filter((d) => d === days[i]).length > 1 ? fmtDateTime(iso) : days[i]));
+}
 
 /**
  * Visibilidad de cada marca por medición (una línea por marca, con el color que eligió el usuario).
@@ -25,6 +34,7 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
 
   // La marca propia se dibuja al final para quedar por encima
   const ordered = useMemo(() => [...series].sort((a, b) => Number(a.own) - Number(b.own)), [series]);
+  const labels = useMemo(() => pointLabels((series[0]?.points ?? []).map((p) => p.date)), [series]);
   const visible = ordered.filter((s) => !hidden.has(s.brand));
 
   if (!n) return <p className="text-sm text-muted">Aún no hay mediciones.</p>;
@@ -120,7 +130,7 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
           {series[0].points.map((p, i) =>
             n <= 6 || i === 0 || i === n - 1 || (i % Math.ceil(n / 6) === 0 && n - 1 - i >= Math.ceil(n / 6)) ? (
               <text key={i} x={x(i)} y={H - 8} fontSize="11" fill="var(--color-muted)" textAnchor={i === 0 && n > 1 ? "start" : i === n - 1 && n > 1 ? "end" : "middle"}>
-                {fmtDate(p.date)}
+                {labels[i]}
               </text>
             ) : null,
           )}
@@ -160,7 +170,7 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
             className="pointer-events-none absolute top-2 z-10 min-w-44 rounded-lg border border-line bg-white px-3 py-2 text-xs shadow-lg"
             style={x(hover) > W * 0.6 ? { right: `${((W - x(hover)) / W) * 100 + 2}%` } : { left: `${(x(hover) / W) * 100 + 2}%` }}
           >
-            <div className="mb-1 font-semibold text-ink">{fmtDate(series[0].points[hover].date)}</div>
+            <div className="mb-1 font-semibold text-ink">{fmtDateTime(series[0].points[hover].date)}</div>
             <ul className="space-y-0.5">
               {tooltipRows.map(({ s, v }) => (
                 <li key={s.brand} className="flex items-center justify-between gap-3">
