@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { findProjectFor, freeLimits, runAvailability } from "@/lib/limits";
 import { projectDashboard } from "@/lib/stats";
 import { hasCredentials } from "@/lib/dataforseo";
+import { canAnalyzeSentiment } from "@/lib/analysis";
 import { METRIC_INFO } from "@/lib/metrics";
 import { hasTag, tagsOf } from "@/lib/tags";
 import { dateShort, dateTime, usd } from "@/lib/format";
@@ -41,6 +42,11 @@ export default async function ProjectPage({
   const shownPrompts = d.activeTag ? activePrompts.filter((p) => hasTag(p, d.activeTag!)) : activePrompts;
   const engines = d.byEngine.map((e) => e.engine);
   const hasSentiment = d.shareOfVoice.some((s) => s.positive + s.neutral + s.negative > 0);
+  // Sentiment de tu marca: se muestra si ya hay datos o si el análisis está activo (ANTHROPIC_API_KEY)
+  const ownRow = d.shareOfVoice.find((s) => s.own);
+  const ownSent = { positive: ownRow?.positive ?? 0, neutral: ownRow?.neutral ?? 0, negative: ownRow?.negative ?? 0, total: 0 };
+  ownSent.total = ownSent.positive + ownSent.neutral + ownSent.negative;
+  const showSentiment = hasSentiment || canAnalyzeSentiment();
   const avail = project.isDemo || d.running ? null : await runAvailability(id, user);
   const blocked = avail && !avail.ok ? avail : null;
   // La medición automática es semanal para todos los proyectos (ver runScheduled)
@@ -153,11 +159,37 @@ export default async function ProjectPage({
             </nav>
           )}
 
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className={`grid grid-cols-2 gap-4 ${showSentiment ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
             <Kpi label="Visibilidad" value={`${kpis.visibility}%`} hint={`de ${kpis.answers} respuestas te mencionan`} info={METRIC_INFO.visibility} />
             <Kpi label="Share of voice" value={`${kpis.share}%`} hint="de las menciones de marcas" info={METRIC_INFO.share} />
             <Kpi label="Posición media" value={kpis.avgPosition ? `#${kpis.avgPosition.toFixed(1)}` : "—"} hint="entre las marcas citadas" info={METRIC_INFO.position} />
             <Kpi label="Citado como fuente" value={kpis.citedIn} hint="respuestas enlazan tu dominio" info={METRIC_INFO.cited} />
+            {showSentiment && (
+              <Kpi
+                label="Sentiment"
+                badge="Nuevo"
+                info={METRIC_INFO.sentiment}
+                className="col-span-2 lg:col-span-1"
+                value={ownSent.total ? `${Math.round((ownSent.positive / ownSent.total) * 100)}%` : "—"}
+                hint={
+                  ownSent.total ? (
+                    <>
+                      <span className="mb-1.5 mt-1 flex h-2 overflow-hidden rounded-full bg-surface" role="presentation">
+                        <span className="bg-good" style={{ width: `${(ownSent.positive / ownSent.total) * 100}%` }} />
+                        <span className="bg-line" style={{ width: `${(ownSent.neutral / ownSent.total) * 100}%` }} />
+                        <span className="bg-bad" style={{ width: `${(ownSent.negative / ownSent.total) * 100}%` }} />
+                      </span>
+                      <span className="font-mono">
+                        <span className="text-good">{ownSent.positive} +</span> · {ownSent.neutral} = · <span className="text-bad">{ownSent.negative} −</span>
+                      </span>{" "}
+                      menciones
+                    </>
+                  ) : (
+                    "Se mostrará en la próxima medición."
+                  )
+                }
+              />
+            )}
           </div>
           {user?.role === "admin" && (
             <p className="-mt-2 text-xs text-muted">

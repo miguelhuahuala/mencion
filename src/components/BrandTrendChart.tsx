@@ -38,34 +38,7 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
   const visible = ordered.filter((s) => !hidden.has(s.brand));
 
   if (!n) return <p className="text-sm text-muted">Aún no hay mediciones.</p>;
-
-  // Con una sola medición no hay "línea": se muestran barras para que los empates no queden encimados
-  if (n === 1) {
-    const rows = [...series]
-      .map((s) => ({ s, v: s.points[0].value }))
-      .filter((r): r is { s: BrandSeries; v: number } => r.v != null)
-      .sort((a, b) => b.v - a.v || Number(b.s.own) - Number(a.s.own));
-    return (
-      <div>
-        <p className="mb-3 text-xs text-muted">Medición del {fmtDate(series[0].points[0].date)}</p>
-        <ul className="space-y-3">
-          {rows.map(({ s, v }) => (
-            <li key={s.brand} className="grid grid-cols-[minmax(0,10rem)_1fr_3rem] items-center gap-3 text-sm">
-              <span className={`flex items-center gap-2 truncate ${s.own ? "font-semibold" : ""}`}>
-                <span aria-hidden className="inline-block size-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                {s.brand} {s.own && <span className="text-xs font-normal text-muted">(tú)</span>}
-              </span>
-              <span className="h-2.5 overflow-hidden rounded-full bg-surface" role="presentation">
-                <span className="block h-full rounded-full" style={{ width: `${Math.max(v, v > 0 ? 2 : 0)}%`, background: s.color }} />
-              </span>
-              <span className="text-right font-mono tabular-nums">{v}%</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-xs text-muted">Desde la próxima medición verás aquí una línea por marca con su evolución.</p>
-      </div>
-    );
-  }
+  // Con una sola medición se ve un punto por marca; la línea aparece desde la segunda (el tooltip lista los empates)
 
   const path = (s: BrandSeries) => {
     let d = "";
@@ -148,7 +121,33 @@ export function BrandTrendChart({ series }: { series: BrandSeries[] }) {
             </g>
           ))}
 
-          {own && lastOwn?.value != null && !hidden.has(own.brand) && hover == null && (
+          {/* Una sola medición: punto grande por marca con su etiqueta al lado (separadas si hay empates) */}
+          {n === 1 &&
+            (() => {
+              const rows = visible
+                .map((s) => ({ s, v: s.points[0].value }))
+                .filter((r): r is { s: BrandSeries; v: number } => r.v != null)
+                .sort((a, b) => b.v - a.v || Number(b.s.own) - Number(a.s.own));
+              let lastY = -Infinity;
+              const labels = rows.map(({ s, v }) => {
+                const ly = Math.max(y(v) + 4, lastY + 16);
+                lastY = ly;
+                return (
+                  <text key={`label-${s.brand}`} x={x(0) + 16} y={ly} fontSize="12" fontWeight={s.own ? 700 : 400} fill="var(--color-ink)">
+                    {s.brand} {v}%
+                  </text>
+                );
+              });
+              // Puntos en el orden de dibujo (tu marca al final, encima de las demás si empatan)
+              const dots = visible.map((s) =>
+                s.points[0].value == null ? null : (
+                  <circle key={`dot-${s.brand}`} cx={x(0)} cy={y(s.points[0].value)} r={s.own ? 8 : 6} fill={s.color} stroke="white" strokeWidth={2} />
+                ),
+              );
+              return [...dots, ...labels];
+            })()}
+
+          {n > 1 && own && lastOwn?.value != null && !hidden.has(own.brand) && hover == null && (
             <text x={Math.min(x(lastOwnIdx) + 8, W - PAD.right - 2)} y={y(lastOwn.value) - 8} fontSize="12" fontWeight={700} fill="var(--color-ink)" textAnchor={lastOwnIdx === n - 1 ? "end" : "start"}>
               {own.brand} {lastOwn.value}%
             </text>

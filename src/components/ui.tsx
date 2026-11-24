@@ -3,10 +3,29 @@ import { ENGINE_LABEL } from "@/lib/types";
 import { EngineLogo } from "./EngineLogo";
 import { InfoTip } from "./InfoTip";
 
-export function Kpi({ label, value, hint, info }: { label: string; value: React.ReactNode; hint?: React.ReactNode; info?: string }) {
+export function Kpi({
+  label,
+  value,
+  hint,
+  info,
+  badge,
+  className = "",
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: React.ReactNode;
+  info?: string;
+  /** Etiqueta destacada junto al título, p. ej. "Nuevo". */
+  badge?: string;
+  className?: string;
+}) {
   return (
-    <div className="card p-4">
-      <div className="label flex items-center">{label}{info ? <InfoTip text={info} label={label} /> : null}</div>
+    <div className={`card p-4 ${className}`}>
+      <div className="label flex items-center">
+        {label}
+        {info ? <InfoTip text={info} label={label} /> : null}
+        {badge ? <span className="chip ml-auto bg-accent-soft text-[10px] normal-case tracking-normal text-accent">{badge}</span> : null}
+      </div>
       <div className="kpi-num mt-1">{value}</div>
       {hint ? <div className="mt-1 text-xs text-muted">{hint}</div> : null}
     </div>
