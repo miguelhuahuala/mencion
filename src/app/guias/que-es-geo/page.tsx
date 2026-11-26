@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ENGINES, ENGINE_LABEL } from "@/lib/types";
 import { ORGANIZATION, absolute } from "@/lib/site";
 import { Breadcrumbs, Faq, JsonLd, PageCta, prose } from "@/components/Seo";
+import { otherGuides } from "@/components/GuideLayout";
 
 const PATH = "/guias/que-es-geo";
 const TITLE = "Qué es GEO (Generative Engine Optimization)";
@@ -28,7 +29,7 @@ export default function GeoGuide() {
   return (
     <div className="space-y-16 pb-8">
       <article>
-        <Breadcrumbs items={[{ name: "Guía: qué es GEO", href: PATH }]} />
+        <Breadcrumbs items={[{ name: "Guías", href: "/guias" }, { name: "Qué es GEO", href: PATH }]} />
         <header className="mt-6 max-w-3xl">
           <span className="chip bg-accent-soft text-accent">Guía</span>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
@@ -174,6 +175,18 @@ export default function GeoGuide() {
           }}
         />
       </article>
+
+      <section className="max-w-3xl">
+        <h2 className="text-xl font-semibold">Profundiza en cada tema</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {otherGuides("que-es-geo").map((g) => (
+            <Link key={g.slug} href={`/guias/${g.slug}`} className="card p-4 hover:border-accent/40">
+              <span className="font-medium">{g.short}</span>
+              <span className="mt-1 block text-sm text-muted">{g.description}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <section className="max-w-3xl">
         <h2 className="text-xl font-semibold">Mide tu marca en cada IA</h2>

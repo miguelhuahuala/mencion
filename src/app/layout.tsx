@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/auth";
 import { signOut } from "./auth-actions";
 import { Analytics } from "@/components/Analytics";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { FEATURES } from "@/lib/feature-pages";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-jb", display: "swap" });
@@ -57,6 +58,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </div>
             ) : (
               <nav className="flex items-center gap-2 text-sm">
+                <Link href="/funciones" className="hidden px-2 text-muted hover:text-ink md:inline">Funciones</Link>
+                <Link href="/guias" className="hidden px-2 text-muted hover:text-ink md:inline">Guías</Link>
+                <Link href="/planes" className="hidden px-2 text-muted hover:text-ink md:inline">Planes</Link>
                 <Link href="/ingresar" className="px-2 text-muted hover:text-ink">Ingresar</Link>
                 <Link href="/registro" className="btn-primary whitespace-nowrap px-3 py-1.5">Crear cuenta<span className="hidden sm:inline"> gratis</span></Link>
               </nav>
@@ -66,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="mx-auto max-w-6xl px-4 pb-24 text-sm text-muted">
           {/* Enlaces internos a las páginas públicas (SEO) */}
-          <nav aria-label="Pie de página" className="grid gap-6 border-t border-line pt-8 sm:grid-cols-3">
+          <nav aria-label="Pie de página" className="grid grid-cols-2 gap-6 border-t border-line pt-8 lg:grid-cols-4">
             <div>
               <p className="font-semibold text-ink">Tu marca en cada IA</p>
               <ul className="mt-2 space-y-1">
@@ -79,8 +83,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div>
               <p className="font-semibold text-ink">Aprende</p>
               <ul className="mt-2 space-y-1">
+                <li><Link href="/guias" className="hover:text-ink">Todas las guías</Link></li>
                 <li><Link href="/guias/que-es-geo" className="hover:text-ink">Qué es GEO</Link></li>
+                <li><Link href="/guias/como-aparecer-en-chatgpt" className="hover:text-ink">Cómo aparecer en ChatGPT</Link></li>
+                <li><Link href="/guias/kpis-de-geo" className="hover:text-ink">KPIs de GEO</Link></li>
                 <li><Link href="/metodologia" className="hover:text-ink">Metodología</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-ink">Funciones</p>
+              <ul className="mt-2 space-y-1">
+                {FEATURES.map((f) => (
+                  <li key={f.slug}><Link href={`/funciones/${f.slug}`} className="hover:text-ink">{f.short}</Link></li>
+                ))}
               </ul>
             </div>
             <div>

@@ -1,4 +1,6 @@
 import { ENGINES } from "./types";
+import { GUIDES } from "./guides";
+import { FEATURES } from "./feature-pages";
 
 /** Datos del sitio público (SEO, sitemap, pie de página). */
 export const SITE = (process.env.SITE_URL ?? "https://menciones.org").replace(/\/$/, "");
@@ -20,8 +22,11 @@ type PublicPage = { path: string; updated: string; changeFrequency: "weekly" | "
 /** Páginas públicas indexables. Al agregar una, súmala aquí para que entre al sitemap. */
 export const PUBLIC_PAGES: PublicPage[] = [
   { path: "/", updated: "2026-11-25", changeFrequency: "weekly", priority: 1 },
-  { path: "/guias/que-es-geo", updated: "2026-11-25", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/guias", updated: "2026-11-25", changeFrequency: "weekly", priority: 0.8 },
+  ...GUIDES.map((g) => ({ path: `/guias/${g.slug}`, updated: g.published, changeFrequency: "monthly" as const, priority: g.slug === "que-es-geo" ? 0.9 : 0.8 })),
   ...ENGINES.map((e) => ({ path: `/ia/${e}`, updated: "2026-11-25", changeFrequency: "monthly" as const, priority: 0.8 })),
+  { path: "/funciones", updated: "2026-11-25", changeFrequency: "monthly", priority: 0.8 },
+  ...FEATURES.map((f) => ({ path: `/funciones/${f.slug}`, updated: "2026-11-25", changeFrequency: "monthly" as const, priority: 0.7 })),
   { path: "/planes", updated: "2026-11-25", changeFrequency: "monthly", priority: 0.8 },
   { path: "/metodologia", updated: "2026-11-25", changeFrequency: "monthly", priority: 0.6 },
   { path: "/registro", updated: "2026-11-25", changeFrequency: "yearly", priority: 0.7 },

@@ -16,21 +16,25 @@ const engineNotes: Record<Engine, string> = {
 const values = [
   {
     title: "Sabe si la IA te recomienda",
+    href: "/funciones/visibilidad-en-ia",
     text: "Cuando alguien pregunta “¿cuál es la mejor opción?”, ¿aparece tu marca? ¿En qué lugar? Lo medimos en cada IA y en cada pregunta.",
     icon: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-1 13-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6Z",
   },
   {
     title: "Compárate con tu competencia",
+    href: "/funciones/share-of-voice-ia",
     text: "Visibilidad, share of voice y posición frente a hasta 10 competidores. Descubre en qué preguntas te están ganando.",
     icon: "M4 20V10h3v10H4Zm6.5 0V4h3v16h-3ZM17 20v-7h3v7h-3Z",
   },
   {
     title: "Descubre qué fuentes citan",
+    href: "/funciones/fuentes-citadas-por-ia",
     text: "Las IAs se apoyan en webs concretas: medios, comparadores, foros. Te mostramos cuáles, para que sepas dónde conseguir presencia.",
     icon: "M10.6 13.4a1 1 0 0 1 0-1.4l3.4-3.4a3 3 0 1 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4L10 15.4a3 3 0 1 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 0 0 1.4 1.4L12 10.6a1 1 0 0 1 1.4 0Z",
   },
   {
     title: "Mide si tu estrategia funciona",
+    href: "/guias/kpis-de-geo",
     text: "Cada medición queda guardada. Ve la tendencia semana a semana y comprueba si tu contenido y tu PR mueven la aguja.",
     icon: "M3 17l6-6 4 4 8-8v4h2V3h-8v2h4l-6 6-4-4-7.4 7.4L3 17Z",
   },
@@ -106,13 +110,13 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {values.map((v) => (
-            <div key={v.title} className="card p-6">
+            <Link key={v.title} href={v.href} className="card p-6 transition hover:border-accent/40">
               <span className="grid size-10 place-items-center rounded-xl bg-accent-soft">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--color-accent)" aria-hidden><path d={v.icon} /></svg>
               </span>
               <h3 className="mt-4 font-semibold">{v.title}</h3>
               <p className="mt-1 text-sm text-muted">{v.text}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
