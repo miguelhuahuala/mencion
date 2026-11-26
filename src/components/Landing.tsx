@@ -3,6 +3,8 @@ import { freeLimits } from "@/lib/limits";
 import { ENGINES, ENGINE_LABEL, type Engine } from "@/lib/types";
 import { DashboardPreview } from "./DashboardPreview";
 import { EngineLogo } from "./EngineLogo";
+import { Faq, JsonLd, PageCta } from "./Seo";
+import { ORGANIZATION, SITE } from "@/lib/site";
 
 const engineNotes: Record<Engine, string> = {
   chatgpt: "La respuesta tal como la ve un usuario de tu país en chatgpt.com, con sus fuentes.",
@@ -40,8 +42,8 @@ const steps = [
   ["Mide y actúa", "Ves en cuántas respuestas apareces, en qué posición, frente a quién y qué sitios citan las IAs."],
 ];
 
-const faqs = [
-  ["¿Por qué importa aparecer en las respuestas de IA?", "Cada vez más personas preguntan a ChatGPT o Perplexity qué comprar o a quién contratar, en lugar de buscar en Google. Si la IA no te menciona, ese cliente ni siquiera llega a conocerte. Optimizar para esto se conoce como GEO (Generative Engine Optimization)."],
+const faqs: [string, string][] = [
+  ["¿Por qué importa aparecer en las respuestas de IA?", "Además de buscar en Google, cada vez más personas le preguntan a ChatGPT o Perplexity qué comprar o a quién contratar. Si la IA no te menciona, ese cliente ni siquiera llega a conocerte. Optimizar para esto se conoce como GEO (Generative Engine Optimization)."],
   ["¿Las respuestas corresponden a mi país?", "Sí. Preguntamos como lo haría una persona en el país e idioma que elijas en tu proyecto: ChatGPT responde con esa ubicación y a Claude, Gemini y Perplexity les indicamos el país y el idioma. Así ves las marcas que la IA recomienda en tu mercado, no las de Estados Unidos o España."],
   ["¿De dónde salen los datos?", "Hacemos tus preguntas en cada IA a través de DataForSEO, con búsqueda web activada y localizada en tu país, y analizamos las respuestas reales. No estimamos ni inventamos resultados."],
   ["¿Cada cuánto se mide?", "En el plan gratis, una vez por semana. Cada medición queda guardada para que veas la evolución."],
@@ -82,13 +84,13 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
         <p id="ias" className="text-center text-sm font-semibold uppercase tracking-wide text-muted">Medimos tu marca en las IAs que usan tus clientes</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {ENGINES.map((e) => (
-            <div key={e} className="card flex items-start gap-3 p-5">
+            <Link key={e} href={`/ia/${e}`} className="card flex items-start gap-3 p-5 transition hover:border-accent/40">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface"><EngineLogo engine={e} size={24} /></span>
               <div>
                 <div className="font-semibold">{ENGINE_LABEL[e]}</div>
                 <p className="mt-0.5 text-sm text-muted">{engineNotes[e]}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -160,28 +162,35 @@ export function Landing({ deleted = false }: { deleted?: boolean }) {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="max-w-3xl">
-        <h2 className="text-3xl font-semibold tracking-tight">Preguntas frecuentes</h2>
-        <div className="mt-6 divide-y divide-line rounded-2xl border border-line bg-white">
-          {faqs.map(([q, a]) => (
-            <details key={q} className="group px-5 py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
-                {q}
-                <span aria-hidden className="text-muted transition group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-2 text-sm text-muted">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+      {/* FAQ (con FAQPage) */}
+      <div>
+        <Faq items={faqs} />
+        <p className="mt-4 max-w-3xl text-sm text-muted">
+          ¿Quieres saber más? Lee la guía <Link href="/guias/que-es-geo" className="text-accent underline underline-offset-2">Qué es GEO</Link> o
+          cómo es nuestra <Link href="/metodologia" className="text-accent underline underline-offset-2">metodología</Link>.
+        </p>
+      </div>
 
-      {/* CTA final */}
-      <section className="rounded-3xl bg-ink px-6 py-12 text-center text-white sm:px-12">
-        <h2 className="text-3xl font-semibold tracking-tight text-balance">Descubre hoy qué dicen las IAs de tu marca</h2>
-        <p className="mx-auto mt-3 max-w-xl text-white/70">Tu primera medición en ChatGPT, Claude, Gemini y Perplexity, gratis.</p>
-        <Link href="/registro" className="btn mt-7 bg-white px-6 py-2.5 text-base text-ink hover:bg-white/90">Empieza gratis</Link>
-      </section>
+      <PageCta title="Descubre hoy qué dicen las IAs de tu marca" />
+
+      <JsonLd
+        data={[
+          { "@context": "https://schema.org", ...ORGANIZATION },
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Menciones",
+            url: SITE,
+            description:
+              "Mide si ChatGPT, Claude, Gemini y Perplexity recomiendan tu marca, en qué posición y frente a tu competencia.",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            inLanguage: "es",
+            publisher: { "@id": ORGANIZATION["@id"] },
+            offers: { "@type": "Offer", name: "Plan gratis", price: "0", priceCurrency: "USD" },
+          },
+        ]}
+      />
     </div>
   );
 }

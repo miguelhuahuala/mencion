@@ -3,7 +3,7 @@ import { AuthCard } from "@/components/AuthCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { requestReset } from "../account-actions";
 
-export const metadata = { title: "Recuperar contraseña" };
+export const metadata = { title: "Recuperar contraseña", robots: { index: false, follow: true } };
 export const dynamic = "force-dynamic";
 
 export default async function ForgotPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string }> }) {

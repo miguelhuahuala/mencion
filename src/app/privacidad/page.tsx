@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <article className="mx-auto max-w-2xl space-y-4 text-sm leading-relaxed">
       <h1 className="text-2xl font-semibold tracking-tight">Política de privacidad</h1>
-      <p className="text-muted">Última actualización: 23 de noviembre de 2026.</p>
+      <p className="text-muted">Última actualización: 25 de noviembre de 2026.</p>
 
       <h2 className="pt-2 font-semibold">Qué datos tratamos</h2>
       <ul className="list-disc space-y-1 pl-5">
@@ -23,8 +23,9 @@ export default function PrivacyPage() {
 
       <h2 className="pt-2 font-semibold">Con quién se comparten</h2>
       <p>
-        Los prompts que configuras se envían a DataForSEO, que los consulta en ChatGPT, Claude, Gemini y Perplexity. Tu correo
-        no se envía a esos servicios.
+        Los prompts que configuras se envían a DataForSEO, que los consulta en ChatGPT, Claude, Gemini y Perplexity. Para
+        clasificar el sentiment, cada prompt y su respuesta, junto con los nombres de las marcas mencionadas, se envían a
+        Anthropic (Claude). Tu correo no se envía a esos servicios.
       </p>
 
       <h2 className="pt-2 font-semibold">Tus derechos</h2>

@@ -5,7 +5,8 @@ import { AuthCard } from "@/components/AuthCard";
 import { signIn } from "../auth-actions";
 import { SubmitButton } from "@/components/SubmitButton";
 
-export const metadata = { title: "Ingresar" };
+// Página de acceso: no compite por búsquedas
+export const metadata = { title: "Ingresar", robots: { index: false, follow: true } };
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string; n?: string }> }) {

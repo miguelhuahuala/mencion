@@ -11,6 +11,7 @@ import { showDemo, dateTime } from "@/lib/format";
 import { parseJson, type BrandHit } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const metadata = { alternates: { canonical: "/" } };
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; cuenta?: string; bienvenida?: string }> }) {
   const user = await currentUser();

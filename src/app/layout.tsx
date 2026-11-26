@@ -64,9 +64,36 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-4 gap-y-1 px-4 pb-24 text-xs text-muted">
-          <span>© {new Date().getFullYear()} Menciones</span>
-          <Link href="/privacidad" className="hover:text-ink">Política de privacidad</Link>
+        <footer className="mx-auto max-w-6xl px-4 pb-24 text-sm text-muted">
+          {/* Enlaces internos a las páginas públicas (SEO) */}
+          <nav aria-label="Pie de página" className="grid gap-6 border-t border-line pt-8 sm:grid-cols-3">
+            <div>
+              <p className="font-semibold text-ink">Tu marca en cada IA</p>
+              <ul className="mt-2 space-y-1">
+                <li><Link href="/ia/chatgpt" className="hover:text-ink">ChatGPT</Link></li>
+                <li><Link href="/ia/claude" className="hover:text-ink">Claude</Link></li>
+                <li><Link href="/ia/gemini" className="hover:text-ink">Gemini</Link></li>
+                <li><Link href="/ia/perplexity" className="hover:text-ink">Perplexity</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-ink">Aprende</p>
+              <ul className="mt-2 space-y-1">
+                <li><Link href="/guias/que-es-geo" className="hover:text-ink">Qué es GEO</Link></li>
+                <li><Link href="/metodologia" className="hover:text-ink">Metodología</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-ink">Menciones</p>
+              <ul className="mt-2 space-y-1">
+                <li><Link href="/planes" className="hover:text-ink">Planes</Link></li>
+                <li><Link href="/registro" className="hover:text-ink">Crear cuenta gratis</Link></li>
+                <li><Link href="/terminos" className="hover:text-ink">Términos y condiciones</Link></li>
+                <li><Link href="/privacidad" className="hover:text-ink">Política de privacidad</Link></li>
+              </ul>
+            </div>
+          </nav>
+          <p className="mt-8 text-xs">© {new Date().getFullYear()} Menciones</p>
         </footer>
         <WhatsAppButton />
         <Analytics />
