@@ -14,7 +14,7 @@ import { Bar, DemoBanner, EngineTag, Kpi, Section } from "@/components/ui";
 import { runNow } from "../../actions";
 import { AutoRefresh } from "./AutoRefresh";
 import { BrandTrendChart } from "@/components/BrandTrendChart";
-import { Hint } from "@/components/InfoTip";
+import { Hint, InfoTip } from "@/components/InfoTip";
 
 export const dynamic = "force-dynamic";
 
@@ -200,11 +200,8 @@ export default async function ProjectPage({
 
           <div className="grid gap-6 lg:grid-cols-5">
             <div className="lg:col-span-3">
-              <Section
-                title="Tú vs. competencia, medición a medición"
-                desc="% de respuestas que mencionan a cada marca. Pasa el cursor para ver los valores; pulsa una marca en la leyenda para ocultarla."
-              >
-                <BrandTrendChart series={d.brandTrend.map((b) => ({ ...b, points: b.points.map((p) => ({ date: p.date.toISOString(), value: p.value })) }))} />
+              <Section title="Evolución vs. competencia" desc="Cómo cambia cada métrica, medición a medición, para tu marca y tus competidores.">
+                <BrandTrendChart series={d.brandTrend.map((b) => ({ ...b, points: b.points.map((p) => ({ ...p, date: p.date.toISOString() })) }))} />
               </Section>
             </div>
             <div className="lg:col-span-2">
@@ -224,10 +221,7 @@ export default async function ProjectPage({
             </div>
           </div>
 
-          <Section
-            title="Tú vs. competencia"
-            desc="Menciones en la última corrida"
-          >
+          <Section title="Comparativo de la última medición" desc="Tu marca frente a cada competidor en la medición más reciente.">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -237,7 +231,14 @@ export default async function ProjectPage({
                     <th className="pb-2 text-right font-semibold">Share</th>
                     <th className="pb-2 text-right font-semibold">Pos. media</th>
                     <th className="pb-2 text-right font-semibold">Citada</th>
-                    {hasSentiment && <th className="pb-2 text-right font-semibold">+ / = / −</th>}
+                    {hasSentiment && (
+                      <th className="pb-2 text-right font-semibold">
+                        <span className="inline-flex items-center justify-end">
+                          Sentiment <span className="ml-1 font-mono normal-case">(+ / = / −)</span>
+                          <InfoTip label="Sentiment" text="Menciones positivas (+), neutrales (=) y negativas (−) de cada marca en la última medición." />
+                        </span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -267,7 +268,7 @@ export default async function ProjectPage({
             </div>
           </Section>
 
-          <Section title="Prompt por prompt" desc="¿Te menciona cada IA? El número es tu posición entre las marcas nombradas. Pulsa para leer la respuesta.">
+          <Section title="Detalle por prompt" desc="¿Te menciona cada IA en cada pregunta? El número es tu posición entre las marcas nombradas. Pulsa para leer la respuesta.">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>

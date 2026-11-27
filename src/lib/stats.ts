@@ -18,6 +18,13 @@ function pct(n: number, d: number) {
   return d ? Math.round((n / d) * 100) : 0;
 }
 
+const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+/** ¿Este registro de una medición corresponde a la marca? La propia por "own"; las demás por nombre sin mayúsculas ni tildes. */
+function sameBrand(h: BrandHit, b: { name: string; own: boolean }) {
+  return b.own ? h.own : !h.own && fold(h.brand) === fold(b.name);
+}
+
 /** tag: si se indica, todas las métricas se calculan solo con los prompts que tienen esa etiqueta. */
 export async function projectDashboard(projectId: string, tag?: string | null) {
   const project = await db.project.findUniqueOrThrow({
@@ -58,10 +65,11 @@ export async function projectDashboard(projectId: string, tag?: string | null) {
   }));
   const ok = responses.filter((r) => !r.error);
 
-  // Colores elegidos por el usuario para cada marca (si una marca se renombró, cae a gris)
+  // Marcas actuales del proyecto. Cada medición guarda el nombre que tenía la marca ese día, así que se emparejan
+  // así: la propia por la marca "own" (sobrevive a cambios de nombre) y los competidores sin distinguir mayúsculas ni tildes.
   const brands = [{ ...ownBrand(project), own: true }, ...competitorsOf(project).map((c) => ({ ...c, own: false }))];
-  const colorOf = (name: string) => brands.find((b) => b.name === name)?.color ?? OTHER_COLOR;
   const ownHit = (r: ParsedResponse) => r.hits.find((h) => h.own);
+  const hitOf = (hits: BrandHit[], b: { name: string; own: boolean }) => hits.find((h) => sameBrand(h, b));
 
   // Visibilidad: % de respuestas donde aparece la marca propia
   const visible = ok.filter((r) => ownHit(r)?.mentioned);
@@ -70,19 +78,20 @@ export async function projectDashboard(projectId: string, tag?: string | null) {
     return { engine, total: set.length, visibility: pct(set.filter((r) => ownHit(r)?.mentioned).length, set.length) };
   }).filter((e) => e.total > 0);
 
-  // Share of voice: menciones de cada marca sobre el total de menciones de marcas seguidas
-  const brandNames = ok[0]?.hits.map((h) => ({ brand: h.brand, own: h.own })) ?? [];
-  const counts = brandNames.map(({ brand, own }) => {
-    const hitsFor = ok.map((r) => r.hits.find((h) => h.brand === brand)).filter((h): h is BrandHit => Boolean(h?.mentioned));
+  // Share of voice: menciones de cada marca sobre el total de menciones de marcas seguidas.
+  // Solo las marcas que se midieron en esta corrida (una agregada después no aparece con 0 %).
+  const measured = brands.filter((b) => ok.some((r) => hitOf(r.hits, b)));
+  const counts = measured.map((b) => {
+    const hitsFor = ok.map((r) => hitOf(r.hits, b)).filter((h): h is BrandHit => Boolean(h?.mentioned));
     const positions = hitsFor.map((h) => h.position!).filter(Boolean);
     return {
-      brand,
-      own,
-      color: colorOf(brand),
+      brand: b.name,
+      own: b.own,
+      color: b.color ?? OTHER_COLOR,
       mentions: hitsFor.length,
       visibility: pct(hitsFor.length, ok.length),
-      avgPosition: positions.length ? positions.reduce((a, b) => a + b, 0) / positions.length : null,
-      cited: ok.filter((r) => r.hits.find((h) => h.brand === brand)?.cited).length,
+      avgPosition: positions.length ? positions.reduce((a, c) => a + c, 0) / positions.length : null,
+      cited: ok.filter((r) => hitOf(r.hits, b)?.cited).length,
       positive: hitsFor.filter((h) => h.sentiment === "positive").length,
       neutral: hitsFor.filter((h) => h.sentiment === "neutral").length,
       negative: hitsFor.filter((h) => h.sentiment === "negative").length,
@@ -109,7 +118,7 @@ export async function projectDashboard(projectId: string, tag?: string | null) {
     return { runId: run.id, date: run.startedAt, visibility: pct(vis, set.length), costUsd: run.costUsd };
   });
 
-  // Evolución por marca: % de respuestas que mencionan cada marca, en cada medición
+  // Evolución por marca y por medición de las 4 métricas (visibilidad, share of voice, posición media y citado como fuente)
   const parsedTrend = trendRows.map((t) => ({ runId: t.runId, hits: parseJson<BrandHit[]>(t.mentions, []) }));
   const brandTrend = brands.map((b) => ({
     brand: b.name,
@@ -117,10 +126,19 @@ export async function projectDashboard(projectId: string, tag?: string | null) {
     color: b.color ?? OTHER_COLOR,
     points: doneRuns.map((run) => {
       const set = parsedTrend.filter((t) => t.runId === run.id);
-      const tracked = set.filter((t) => t.hits.some((h) => h.brand === b.name));
+      const mine = set.map((t) => hitOf(t.hits, b));
       // null = esa marca aún no se seguía en esa medición
-      const value = tracked.length ? pct(tracked.filter((t) => t.hits.find((h) => h.brand === b.name)?.mentioned).length, set.length) : null;
-      return { date: run.startedAt, value };
+      if (!mine.some(Boolean)) return { date: run.startedAt, visibility: null, share: null, position: null, cited: null };
+      const mentioned = mine.filter((h): h is BrandHit => Boolean(h?.mentioned));
+      const allMentions = set.reduce((a, t) => a + t.hits.filter((h) => h.mentioned).length, 0);
+      const positions = mentioned.map((h) => h.position).filter((p): p is number => p != null);
+      return {
+        date: run.startedAt,
+        visibility: pct(mentioned.length, set.length),
+        share: pct(mentioned.length, allMentions),
+        position: positions.length ? Math.round((positions.reduce((a, c) => a + c, 0) / positions.length) * 10) / 10 : null,
+        cited: pct(mine.filter((h) => h?.cited).length, set.length),
+      };
     }),
   }));
 

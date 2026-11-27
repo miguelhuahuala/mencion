@@ -90,7 +90,7 @@ export const FEATURES: FeaturePage[] = [
       "En cada respuesta ordenamos tus marcas seguidas según dónde aparecen por primera vez en el texto.",
       "Tu posición es tu lugar en ese orden: #1 significa que te nombró primero.",
       "Posición media = promedio de tus posiciones en las respuestas donde apareces.",
-      "En la tabla “Prompt por prompt” ves tu posición en cada pregunta y en cada IA.",
+      "En la tabla “Detalle por prompt” ves tu posición en cada pregunta y en cada IA.",
     ],
     example: "Si en una respuesta la IA nombra a Marca A, luego a ti y luego a Marca B, tu posición es #2.",
     useFor: [

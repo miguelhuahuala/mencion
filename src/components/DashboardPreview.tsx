@@ -70,7 +70,7 @@ export function DashboardPreview() {
 
           <div className="grid gap-3 md:grid-cols-2 [&>*]:min-w-0">
             <div className="card p-3">
-              <div className="mb-2 text-xs font-semibold">Tú vs. competencia</div>
+              <div className="mb-2 text-xs font-semibold">Comparativo vs. competencia</div>
               <table className="w-full text-xs">
                 <tbody className="divide-y divide-line">
                   {brands.map((b) => (
@@ -86,7 +86,7 @@ export function DashboardPreview() {
             </div>
             <div className="card p-3">
               <div className="mb-2 flex items-center justify-between text-xs font-semibold">
-                <span>Prompt por prompt</span>
+                <span>Detalle por prompt</span>
                 <span className="flex shrink-0 gap-1">
                   {ENGINES.map((e) => (
                     <span key={e} className="flex w-7 justify-center" title={ENGINE_LABEL[e]}><EngineLogo engine={e} size={13} /></span>
